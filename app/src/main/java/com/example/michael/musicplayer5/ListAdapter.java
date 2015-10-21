@@ -25,7 +25,7 @@ public class ListAdapter extends ArrayAdapter<SongObject> {
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.data = data;
-        Log.v("TAG","Inside song list adapter constructor");
+        Log.v("TAG", "Inside song list adapter constructor");
     }
 
     @Override
@@ -65,7 +65,7 @@ public class ListAdapter extends ArrayAdapter<SongObject> {
         //SongHolder.data.setText("data" + songs.data);
         SongHolder.duration.setText(
                 DateUtils.formatElapsedTime(
-                        Long.parseLong(songObject.duration)/1000
+                        Long.parseLong(songObject.duration) / 1000
                 )); // song duration returned in ms is converted to hh:mm:ss format
         return row;
     }
@@ -78,3 +78,4 @@ public class ListAdapter extends ArrayAdapter<SongObject> {
         //static TextView data;
         static TextView duration;
     }
+}

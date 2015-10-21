@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     /** Initializations **/
     static MediaPlayer mMediaPlayer = new MediaPlayer();
     Boolean songHasBeenPlayedAtLeastOnce = true;
-    ArrayList<com.example.michael.musicplayer5.SongObject> songObectList = new ArrayList<>();
+    ArrayList<com.example.michael.musicplayer5.SongObject> arrayList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         MakeList(mCursor); // Creates list array of song objects
 
         /** Adapter **/
-        adapter = new ListAdapter(this, R.layout.listview_item_row, songObectList); // Maps song objects to list view
+        adapter = new ListAdapter(this, R.layout.listview_item_row, arrayList); // Maps song objects to list view
         listView.setAdapter(adapter); // Set target list view for adapter logic
 
         /** mediaPlayer Interfaces **/
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 if (toggleButton.isChecked() == false) {toggleButton.setChecked(true);}
-                TrySong(songObectList.get(arg2).data);
+                TrySong(arrayList.get(arg2).data);
             }
         });
     }
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String SelectSong() {
-        song = songObjectList.get(0).data;
+        song = arrayList.get(0).data;
         return song;
     }
 
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 songObject.title = mCursor.getString(2);
                 songObject.data = mCursor.getString(3);
                 songObject.duration = mCursor.getString(4);
-                songObectList.add(songObject);
+                arrayList.add(songObject);
             } while (mCursor.moveToNext());
         }
         mCursor.close();
