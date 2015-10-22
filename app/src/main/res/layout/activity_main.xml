@@ -70,12 +70,12 @@
             android:layout_centerVertical="true"/>
 
         <ToggleButton
-            android:id="@+id/skipForwards"
+            android:id="@+id/skipBackwards"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginRight="5dp"
             android:layout_marginBottom="5dp"
-            android:background="@drawable/skipforwards"
+            android:background="@drawable/skipback"
             android:layout_margin="10dp"
             android:textOn=""
             android:textOff=""
@@ -84,12 +84,12 @@
             android:layout_centerVertical="true"/>
 
         <ToggleButton
-            android:id="@+id/skipBackwards"
+            android:id="@+id/skipForwards"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginRight="5dp"
             android:layout_marginBottom="5dp"
-            android:background="@drawable/skipback"
+            android:background="@drawable/skipforwards"
             android:layout_margin="10dp"
             android:textOn=""
             android:textOff=""

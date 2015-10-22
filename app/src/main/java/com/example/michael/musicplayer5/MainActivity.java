@@ -199,9 +199,14 @@ public class MainActivity extends AppCompatActivity {
         Log.v("TAG GetNextSongIndex"," Method");
         Log.v("TAG lastSongIndex: ",String.valueOf(lastSongIndex));
         int index = lastSongIndex;
-        int nextSongIndex = index + 1;
-        Log.v("TAG nextSongIndex: ",String.valueOf(nextSongIndex));
-        return nextSongIndex;
+        // if index is last song index, make it the first index, otherwise make it the next index
+        if(index == songList.size() - 1){
+            index = 0;
+        }else{
+            index = index + 1;
+        }
+        Log.v("TAG nextSongIndex: ",String.valueOf(index));
+        return index;
     }
 
     public int GetRandomSongIndex() {
