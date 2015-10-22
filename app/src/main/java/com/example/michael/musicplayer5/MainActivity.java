@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,21 +16,36 @@ import android.widget.ToggleButton;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    /**View Group References**/
+    /**View References**/
     ListView listView; // Widgets cannot be instantiated until after setContent() is called
-    ToggleButton toggleButton;
+    ToggleButton playButton;
+    ToggleButton skipForwardsButton;
+    ToggleButton skipBackwardsButton;
+    ToggleButton shuffleButton;
+    ToggleButton loopButton;
 
-    /**Other References**/
+    /**Non View References**/
     ListAdapter adapter;
     String song;
+    int randomNum;
+    int max;
+    int min;
+    int lastSongPlayedIndex;
+    int nextSongToPlayIndex;
 
     /** Initializations **/
-    static MediaPlayer mMediaPlayer = new MediaPlayer();
-    Boolean songHasBeenPlayedAtLeastOnce = true;
-    ArrayList<com.example.michael.musicplayer5.SongObject> arrayList = new ArrayList<>();
+    static MediaPlayer mediaPlayer = new MediaPlayer();
+    ArrayList<com.example.michael.musicplayer5.SongObject> songList = new ArrayList<>();
+    Random randomUtil = new Random();
+
+    /** Boolean Initializations **/
+    Boolean noSongHasBeenPlayedYet = true;
+    Boolean shuffleOn = false;
+    Boolean loopListOn = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +53,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /** View Groups **/
-        toggleButton = (ToggleButton) findViewById(R.id.playButton);
+        /** Assign global view references **/
+        playButton = (ToggleButton) findViewById(R.id.playButton);
+        skipForwardsButton = (ToggleButton) findViewById(R.id.skipForwards);
+        skipBackwardsButton = (ToggleButton) findViewById(R.id.skipBackwards);
+        shuffleButton = (ToggleButton) findViewById(R.id.shuffle);
+        loopButton = (ToggleButton) findViewById(R.id.loopList);
         listView = (ListView) findViewById(R.id.song_list); // Set's reference to view object
 
         /** Cursor **/
@@ -46,39 +66,146 @@ public class MainActivity extends AppCompatActivity {
         MakeList(mCursor); // Creates list array of song objects
 
         /** Adapter **/
-        adapter = new ListAdapter(this, R.layout.listview_item_row, arrayList); // Maps song objects to list view
+        adapter = new ListAdapter(this, R.layout.listview_item_row, songList); // Maps song objects to list view
         listView.setAdapter(adapter); // Set target list view for adapter logic
 
         /** mediaPlayer Interfaces **/
-        ClickListenerListItem(); // Listens for list item click events
-        ClickListenerPlayButton();
+        Listeners();
     }
 
-    private void ClickListenerListItem() {
+    private void Listeners() {
+
+        // If a song finishes playing
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            public void onCompletion(MediaPlayer mp) {
+                int songIndex;
+                // If shuffle mode is on
+                if (shuffleOn == true) {
+                    // Play a random song but not the last song
+                    songIndex = lastSongPlayedIndex;
+                    while( songIndex == lastSongPlayedIndex){
+                        songIndex = GetRandomSongIndex();
+                    }
+                    TryToPlaySong(songList.get(songIndex).data);
+                    lastSongPlayedIndex = songIndex;
+                    nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                }
+                // If shuffle mode is off
+                else {
+                    // Play the next song in the list
+                    songIndex = GetNextSongIndex(lastSongPlayedIndex);
+                    TryToPlaySong(songList.get(songIndex).data);
+                    lastSongPlayedIndex = songIndex;
+                    nextSongToPlayIndex = GetNextSongIndex(lastSongPlayedIndex);
+                }
+            }
+        });
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                if (toggleButton.isChecked() == false) {toggleButton.setChecked(true);}
-                TrySong(arrayList.get(arg2).data);
+                int songIndex = arg2;
+                TryToPlaySong(songList.get(songIndex).data);
+                lastSongPlayedIndex = songIndex;
+                if (playButton.isChecked() == false) {
+                    playButton.setChecked(true);
+                }
             }
         });
-    }
 
-    public void ClickListenerPlayButton() {
-        toggleButton.setOnClickListener(new View.OnClickListener() {
+        shuffleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                song = SelectSong();
-                if (songHasBeenPlayedAtLeastOnce == false) {MainActivity.TrySong(song);songHasBeenPlayedAtLeastOnce = true;}
-                else if (MainActivity.mMediaPlayer.isPlaying() == true) {MainActivity.mMediaPlayer.pause();}
-                else {MainActivity.mMediaPlayer.start();}
+                if(shuffleOn == false){shuffleOn = true;}
+                else{shuffleOn = false;}
+            }
+        });
+
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int songIndex;
+                // If a song has not been played yet
+                if (noSongHasBeenPlayedYet == true) {
+                    // If shuffle mode is off -> play first song in the list
+                    if (shuffleOn == false) {
+                        songIndex = GetFirstSongIndex();
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                        noSongHasBeenPlayedYet = false;
+                    }
+                    // If shuffle mode is on --> play a random song
+                    else {
+                        songIndex = GetRandomSongIndex();
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                        noSongHasBeenPlayedYet = false;
+                    }
+                } else if (MainActivity.mediaPlayer.isPlaying() == true) {
+                    mediaPlayer.pause();
+                } else {
+                    mediaPlayer.start();
+                }
+            }
+        });
+
+        skipForwardsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        skipBackwardsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        loopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Do something
             }
         });
     }
 
-    public String SelectSong() {
-        song = arrayList.get(0).data;
-        return song;
+    public int GetFirstSongIndex() {
+        Log.v("TAG GetFirstSongIndex"," Method");
+        int firstSongIndex;
+        firstSongIndex = 0;
+        return firstSongIndex;
+    }
+    /*
+        public String GetNextSongIndex() {
+            String nextSong;
+            // get next song
+            //return nextSong;
+        }
+
+        public String GetPreviousSong() {
+            String previousSong;
+            // get previous song
+            //return previousSong;
+        }
+    */
+    public int GetNextSongIndex(int lastSongPlayedIndex) {
+        Log.v("TAG GetNextSongIndex"," Method");
+        int index = lastSongPlayedIndex;
+        int nextSongIndex = index + 1;
+        Log.v("TAG nextSongIndex: ",String.valueOf(nextSongIndex));
+        return nextSongIndex;
+    }
+
+    public int GetRandomSongIndex() {
+        Log.v("TAG GetRandomSongIndex"," Method");
+        max = songList.size() - 1; // returns number of elements within array list minus 1
+        min = 0;
+        randomNum = randomUtil.nextInt((max - min) + 1) + min;
+        return randomNum;
     }
 
     private Cursor GetCursor() {
@@ -107,13 +234,13 @@ public class MainActivity extends AppCompatActivity {
                 songObject.title = mCursor.getString(2);
                 songObject.data = mCursor.getString(3);
                 songObject.duration = mCursor.getString(4);
-                arrayList.add(songObject);
+                songList.add(songObject);
             } while (mCursor.moveToNext());
         }
         mCursor.close();
     }
 
-    public static void TrySong(String string) {
+    public static void TryToPlaySong(String string) {
         try {PlaySong(string);}
         catch (IllegalArgumentException e) {e.printStackTrace();}
         catch (IllegalStateException e) {e.printStackTrace();}
@@ -122,10 +249,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static void PlaySong(String path) throws IllegalArgumentException, IllegalStateException, IOException {
         //String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
-        mMediaPlayer.reset();
-        mMediaPlayer.setDataSource(path);
-        mMediaPlayer.prepare();
-        mMediaPlayer.start();
+        mediaPlayer.reset();
+        mediaPlayer.setDataSource(path);
+        mediaPlayer.prepare();
+        mediaPlayer.start();
     }
 
     private String GetAlbumArtURI(String[] albumID) {
