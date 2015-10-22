@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 int songIndex = arg2;
+                Log.v("TAG arg2: ", String.valueOf(arg2));
                 TryToPlaySong(songList.get(songIndex).data);
                 lastSongPlayedIndex = songIndex;
                 if (playButton.isChecked() == false) {
@@ -192,9 +193,10 @@ public class MainActivity extends AppCompatActivity {
             //return previousSong;
         }
     */
-    public int GetNextSongIndex(int lastSongPlayedIndex) {
+    public int GetNextSongIndex(int lastSongIndex) {
         Log.v("TAG GetNextSongIndex"," Method");
-        int index = lastSongPlayedIndex;
+        Log.v("TAG lastSongIndex: ",String.valueOf(lastSongIndex));
+        int index = lastSongIndex;
         int nextSongIndex = index + 1;
         Log.v("TAG nextSongIndex: ",String.valueOf(nextSongIndex));
         return nextSongIndex;
