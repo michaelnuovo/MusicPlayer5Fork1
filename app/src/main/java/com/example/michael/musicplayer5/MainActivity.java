@@ -41,13 +41,14 @@ public class MainActivity extends AppCompatActivity {
 
     /** Initializations **/
     static MediaPlayer mediaPlayer = new MediaPlayer();
+
     ArrayList<com.example.michael.musicplayer5.SongObject> songList = new ArrayList<>();
     Random randomUtil = new Random();
 
     /** Boolean Initializations **/
     Boolean noSongHasBeenPlayedYet = true;
     Boolean shuffleOn = false;
-    Boolean loopListOn = true;
+    Boolean loopModeOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,12 +81,18 @@ public class MainActivity extends AppCompatActivity {
         // If a song finishes playing
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             public void onCompletion(MediaPlayer mp) {
+                Log.v("TAG onCompletion is"," fired");
                 int songIndex;
                 // If shuffle mode is on
-                if (shuffleOn == true) {
+                if(loopModeOn == true){
+
+                    mediaPlayer.start();
+                    Log.v("TAG mediaPlayerstart()"," fired");
+                }
+                else if (shuffleOn == true) {
                     // Play a random song but not the last song
                     songIndex = lastSongPlayedIndex;
-                    while( songIndex == lastSongPlayedIndex){
+                    while (songIndex == lastSongPlayedIndex) {
                         songIndex = GetRandomSongIndex();
                     }
                     TryToPlaySong(songList.get(songIndex).data);
@@ -106,12 +113,33 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                int songIndex = arg2;
-                Log.v("TAG arg2: ", String.valueOf(arg2));
-                TryToPlaySong(songList.get(songIndex).data);
-                lastSongPlayedIndex = songIndex;
+
                 if (playButton.isChecked() == false) {
                     playButton.setChecked(true);
+                }
+                int songIndex = arg2;
+                TryToPlaySong(songList.get(songIndex).data);
+                lastSongPlayedIndex = songIndex;
+                nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                noSongHasBeenPlayedYet = false;
+
+            }
+        });
+
+        loopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v("TAG loop button", "clicked");
+                if(loopModeOn == false){
+                    // if media player loops mode is off --> turn on
+                    //mediaPlayer.setLooping(true); // this mode doesn't work on certain versions of android http://stackoverflow.com/questions/28566268/mediaplayer-wont-loop-setlooping-doesnt-work
+                    loopModeOn = true;
+                    Log.v("TAG loop mode ","on");
+                }else{
+                    // turn loop mode off
+                    //mediaPlayer.setLooping(false);
+                    loopModeOn = false;
+                    Log.v("TAG loop mode ","off");
                 }
             }
         });
@@ -119,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
         shuffleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.v("TAG shuffleButton","clicked");
                 if(shuffleOn == false){shuffleOn = true;}
                 else{shuffleOn = false;}
             }
@@ -157,23 +186,86 @@ public class MainActivity extends AppCompatActivity {
         skipForwardsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int songIndex;
+                if (shuffleOn == true) {
 
+                    if (noSongHasBeenPlayedYet == true) {
+                        songIndex = GetRandomSongIndex();
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                        noSongHasBeenPlayedYet = false;
+                    } else {
+                        songIndex = lastSongPlayedIndex;
+                        while (songIndex == lastSongPlayedIndex) {
+                            songIndex = GetRandomSongIndex();
+                        }
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                    }
+                } else {
+
+                    if (noSongHasBeenPlayedYet == true) {
+                        songIndex = 0;
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                        noSongHasBeenPlayedYet = false;
+                    } else {
+                        songIndex = nextSongToPlayIndex;
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                    }
+                }
             }
         });
 
         skipBackwardsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int songIndex;
+                /**
+                if (shuffleOn == true) {
+
+                    if (noSongHasBeenPlayedYet == true) {
+                        songIndex = GetRandomSongIndex();
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                        noSongHasBeenPlayedYet = false;
+                    } else {
+                        songIndex = lastSongPlayedIndex;
+                        while (songIndex == lastSongPlayedIndex) {
+                            songIndex = GetRandomSongIndex();
+                        }
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                    }
+                } else **/
+
+                    if (noSongHasBeenPlayedYet == true) {
+                        songIndex = songList.size() - 1 ; // Get last index in list
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                        noSongHasBeenPlayedYet = false;
+                    } else {
+                        // Get last last index in line
+                        songIndex = lastSongPlayedIndex - 1;
+                        if(songIndex < 0){
+                            songIndex = songList.size() - 1;
+                        }
+                        TryToPlaySong(songList.get(songIndex).data);
+                        lastSongPlayedIndex = songIndex;
+                        nextSongToPlayIndex = GetNextSongIndex(songIndex);
+                    }
 
             }
         });
 
-        loopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Do something
-            }
-        });
     }
 
     public int GetFirstSongIndex() {
