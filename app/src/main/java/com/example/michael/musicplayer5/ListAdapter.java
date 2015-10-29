@@ -14,13 +14,13 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class ListAdapterTitle extends ArrayAdapter<SongObject> {
+public class ListAdapter extends ArrayAdapter<SongObject> {
 
     Context context;
     int layoutResourceId;
     ArrayList<SongObject> data = null;
 
-    public ListAdapterTitle(Context context, int layoutResourceId, ArrayList<SongObject> data) {
+    public ListAdapter(Context context, int layoutResourceId, ArrayList<SongObject> data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;

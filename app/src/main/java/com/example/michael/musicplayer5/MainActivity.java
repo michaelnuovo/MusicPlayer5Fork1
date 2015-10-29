@@ -28,35 +28,35 @@ public class MainActivity extends AppCompatActivity {
     /**View References**/
     ListView listView; // Widgets cannot be instantiated until after setContent() is called
     static ToggleButton playButton;
-    ToggleButton skipForwardsButton;
-    ToggleButton skipBackwardsButton;
-    ToggleButton shuffleButton;
-    ToggleButton loopButton;
+    static ToggleButton skipForwardsButton;
+    static ToggleButton skipBackwardsButton;
+    static ToggleButton shuffleButton;
+    static ToggleButton loopButton;
 
     /** Non View References **/
-    ListAdapterTitle adapter;
-    int max;
-    int min;
-    int clickedSkipBackWardsButtonHowManyTimes = 0;
+    static ListAdapter adapter;
+    static int max;
+    static int min;
+    static int clickedSkipBackWardsButtonHowManyTimes = 0;
 
     /** View Pager References **/
-    MyPageAdapter pageAdapter;
-    List<Fragment> fragments;
+    static MyPageAdapter pageAdapter;
+    static List<Fragment> fragments;
 
     /** List References **/
-    ArrayList<com.example.michael.musicplayer5.SongObject> songList;
-    ArrayList<String> artistList;
-    ArrayList<String> albumList;
+    static ArrayList<com.example.michael.musicplayer5.SongObject> songList;
+    static ArrayList<String> artistList;
+    static ArrayList<String> albumList;
 
     /** Initializations **/
     static MediaPlayer mediaPlayer = new MediaPlayer();
-    ArrayList<Integer> playHistory = new ArrayList<>();
-    Random randomUtil = new Random();
+    static ArrayList<Integer> playHistory = new ArrayList<>();
+    static Random randomUtil = new Random();
 
     /** Boolean Initializations **/
-    Boolean noSongHasBeenPlayedYet = true;
-    Boolean shuffleOn = false;
-    Boolean loopModeOn = false;
+    static Boolean noSongHasBeenPlayedYet = true;
+    static Boolean shuffleOn = false;
+    static Boolean loopModeOn = false;
     static Boolean pressedPlay = false;
 
 
@@ -73,7 +73,8 @@ public class MainActivity extends AppCompatActivity {
         skipBackwardsButton = (ToggleButton) findViewById(R.id.skipBackwards);
         shuffleButton = (ToggleButton) findViewById(R.id.shuffle);
         loopButton = (ToggleButton) findViewById(R.id.loopList);
-        listView = (ListView) findViewById(R.id.song_list); // Set's reference to view object
+        //listView = (ListView) findViewById(R.id.song_list); // Set's reference to view object
+        listView = (ListView) findViewById(R.id.fragmentListView);
 
         /** List Initializations **/
         songList = new ArrayList<>();
@@ -86,15 +87,17 @@ public class MainActivity extends AppCompatActivity {
         /** Fragments & Pager  **/
         fragments = getFragments();
         pageAdapter = new MyPageAdapter(getSupportFragmentManager(), fragments);
-        ViewPager pager = (ViewPager)findViewById(R.id.viewpager);
-        pager.setAdapter(pageAdapter);
+        ViewPager viewPager = (ViewPager)findViewById(R.id.viewpager);
+        viewPager.setAdapter(pageAdapter);
 
         /** List Adapter **/
-        adapter = new ListAdapterTitle(this, R.layout.list_view_item_title, songList);
-        listView.setAdapter(adapter);
+        //adapter = new ListAdapter(this, R.layout.list_view_item_title, songList);
+        //listView.setAdapter(adapter);
 
         /** mediaPlayer Listeners **/
         Listeners();
+
+
     }
 
     private List<Fragment> getFragments() {
@@ -103,9 +106,10 @@ public class MainActivity extends AppCompatActivity {
         List<Fragment> fList = new ArrayList<Fragment>();
 
         // Initialize and add fragment objects to the array list
-        fList.add(MyFragment.newInstance("Fragment 1"));
-        fList.add(MyFragment.newInstance("Fragment 2"));
-        fList.add(MyFragment.newInstance("Fragment 3"));
+
+        fList.add(MyFragment.newInstance(songList));
+        fList.add(MyFragment.newInstance(songList));
+        fList.add(MyFragment.newInstance(songList));
 
         // Return the fragment object array list for adaption to the pager view
         return fList;
@@ -118,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
             public void onCompletion(MediaPlayer mp) {
 
-                if(loopModeOn == true){
+                if (loopModeOn == true) {
 
                     mediaPlayer.start();
                 } else {
@@ -157,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /** List View Listener **/
+        /** List View Listener **
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
@@ -206,7 +210,8 @@ public class MainActivity extends AppCompatActivity {
                     playHistory.add(arg2);
                 }
             }
-        });
+        });**/
+
 
         /** Play Button Listener **/
         playButton.setOnClickListener(new View.OnClickListener() {
