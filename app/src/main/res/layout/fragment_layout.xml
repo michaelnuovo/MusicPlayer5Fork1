@@ -1,13 +1,119 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".DemoActivity">
+    tools:context=".DemoActivity"
+
+    >
 
     <ListView
         android:id="@+id/fragmentListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#90FFFF00"/>
+        style="@style/fragmentStyle"
+        android:requiresFadingEdge="vertical"
+        android:fadingEdgeLength="48dp"
+        android:layout_above="@+id/bottomLayout"
+        />
 
-</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:layout_alignParentBottom="true"
+        android:background="#000000"
+        android:orientation="vertical"
+        android:id="@id/bottomLayout"
+
+        >
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#FF0000"
+            ></View>
+
+        <LinearLayout
+            android:id="@+id/playControls"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+
+            android:orientation="horizontal">
+
+            <ToggleButton
+                android:id="@+id/playButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/toggle_play_button"
+                android:layout_margin="10dp"
+                android:textOn=""
+                android:textOff=""
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_centerVertical="true"/>
+
+            <ToggleButton
+                android:id="@+id/shuffle"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/toggle_shuffle_button"
+                android:layout_margin="10dp"
+                android:textOn=""
+                android:textOff=""
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_centerVertical="true"/>
+
+            <ToggleButton
+                android:id="@+id/loopList"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/toggle_loop_mode"
+                android:layout_margin="10dp"
+                android:textOn=""
+                android:textOff=""
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_centerVertical="true"/>
+
+            <ToggleButton
+                android:id="@+id/skipBackwards"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/skipback"
+                android:layout_margin="10dp"
+                android:textOn=""
+                android:textOff=""
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_centerVertical="true"/>
+
+            <ToggleButton
+                android:id="@+id/skipForwards"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/skipforwards"
+                android:layout_margin="10dp"
+                android:textOn=""
+                android:textOff=""
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:layout_centerVertical="true"/>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</RelativeLayout>

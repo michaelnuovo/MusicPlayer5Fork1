@@ -11,10 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.ToggleButton;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,22 +18,6 @@ import java.util.List;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-
-    // TESTEST
-
-    /**View References**/
-    ListView listView; // Widgets cannot be instantiated until after setContent() is called
-    static ToggleButton playButton;
-    static ToggleButton skipForwardsButton;
-    static ToggleButton skipBackwardsButton;
-    static ToggleButton shuffleButton;
-    static ToggleButton loopButton;
-
-    /** Non View References **/
-    static ListAdapter adapter;
-    static int max;
-    static int min;
-    static int clickedSkipBackWardsButtonHowManyTimes = 0;
 
     /** View Pager References **/
     static MyPageAdapter pageAdapter;
@@ -59,22 +39,17 @@ public class MainActivity extends AppCompatActivity {
     static Boolean loopModeOn = false;
     static Boolean pressedPlay = false;
 
-
+    /** Other **/
+    static ListAdapter adapter;
+    static int max;
+    static int min;
+    static int clickedSkipBackWardsButtonHowManyTimes = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        /** View initializations **/
-        playButton = (ToggleButton) findViewById(R.id.playButton);
-        skipForwardsButton = (ToggleButton) findViewById(R.id.skipForwards);
-        skipBackwardsButton = (ToggleButton) findViewById(R.id.skipBackwards);
-        shuffleButton = (ToggleButton) findViewById(R.id.shuffle);
-        loopButton = (ToggleButton) findViewById(R.id.loopList);
-        //listView = (ListView) findViewById(R.id.song_list); // Set's reference to view object
-        listView = (ListView) findViewById(R.id.fragmentListView);
 
         /** List Initializations **/
         songList = new ArrayList<>();
@@ -88,15 +63,13 @@ public class MainActivity extends AppCompatActivity {
         fragments = getFragments();
         pageAdapter = new MyPageAdapter(getSupportFragmentManager(), fragments);
         ViewPager viewPager = (ViewPager)findViewById(R.id.viewpager);
+        //viewPager.setPageTransformer(true, new DepthPageTransformer());
+        viewPager.setPageTransformer(true, new ZoomOutPageTransformer());
         viewPager.setAdapter(pageAdapter);
 
         /** List Adapter **/
         //adapter = new ListAdapter(this, R.layout.list_view_item_title, songList);
         //listView.setAdapter(adapter);
-
-        /** mediaPlayer Listeners **/
-        Listeners();
-
 
     }
 
@@ -115,196 +88,7 @@ public class MainActivity extends AppCompatActivity {
         return fList;
     }
 
-    private void Listeners() {
-
-        // If a song finishes playing
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-
-            public void onCompletion(MediaPlayer mp) {
-
-                if (loopModeOn == true) {
-
-                    mediaPlayer.start();
-                } else {
-
-                    PlayAndIndexASong();
-                }
-            }
-        });
-
-        loopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.v("TAG loop button", "clicked");
-                if (loopModeOn == false) {
-                    // if media player loops mode is off --> turn on
-                    //mediaPlayer.setLooping(true); // this mode doesn't work on certain versions of android http://stackoverflow.com/questions/28566268/mediaplayer-wont-loop-setlooping-doesnt-work
-                    loopModeOn = true;
-                    Log.v("TAG loop mode ", "on");
-                } else {
-                    // turn loop mode off
-                    //mediaPlayer.setLooping(false);
-                    loopModeOn = false;
-                    Log.v("TAG loop mode ", "off");
-                }
-            }
-        });
-
-        shuffleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (shuffleOn == false) {
-                    shuffleOn = true;
-                } else {
-                    shuffleOn = false;
-                }
-            }
-        });
-
-        /** List View Listener **
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-
-                // arg2 is the position of the view which corresponds to a list array index
-                // .get() method on this index will return a song object
-
-                if (playButton.isChecked() == false) { // If set to play
-
-                    playButton.setChecked(true); // set to pause
-                }
-
-                TryToPlaySong(songList.get(arg2).data);
-                if (noSongHasBeenPlayedYet == true) {
-                    noSongHasBeenPlayedYet = false;
-                }
-
-                // If list view items is clicked after user has clicked back tracked a number of times
-                // than that many items should be deleted from the play history list
-                // since a new play list will be branched from that point
-
-                if (clickedSkipBackWardsButtonHowManyTimes > 0) {
-
-                    int i;
-                    int j=0;
-
-                    for (i = clickedSkipBackWardsButtonHowManyTimes; i > 0; i--) {
-
-                        playHistory.remove(playHistory.size() - 1); // Remove last element in the play history
-                        j+=1;
-                    }
-
-                    clickedSkipBackWardsButtonHowManyTimes = clickedSkipBackWardsButtonHowManyTimes - j;
-                }
-
-                if(playHistory.size()>=1){
-                    // Add the clicked song to the play list
-                    if(songList.get(arg2) != songList.get(playHistory.get(playHistory.size()-1))){ // <---
-                        playHistory.add(arg2);
-
-                    }else{
-                        // do nothing
-                    }
-                }else{
-
-                    playHistory.add(arg2);
-                }
-            }
-        });**/
-
-
-        /** Play Button Listener **/
-        playButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if(noSongHasBeenPlayedYet == true){
-
-                    PlayAndIndexASong();
-
-                } else {
-
-                    if(pressedPlay == true){
-                        pressedPlay = false;
-                        mediaPlayer.start();
-
-                    }else{
-                        Log.v("TAG: ","pause");
-                        pressedPlay = true;
-                        mediaPlayer.pause();
-                    }
-                }
-            }
-        });
-
-        /** Skip Forwards Listener **/
-        skipForwardsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if(playButton.isChecked() == false){
-                    playButton.setChecked(true);
-                }
-
-                if(noSongHasBeenPlayedYet == true){
-                    PlayAndIndexASong();
-                    noSongHasBeenPlayedYet = false;
-                } else {
-                    PlayAndIndexASong();
-                }
-
-
-            }
-        });
-
-        /** Skip backwards Listener **/
-        skipBackwardsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (playHistory.size() == 0) { // If there are no songs in the play history
-
-                    // Do nothing
-
-                } else {
-
-                    // If current position is greater 5 seconds, restart
-                    if(mediaPlayer.getCurrentPosition() > 10000){
-
-                        if(playHistory.size() > 1){
-
-                            TryToPlaySong(songList.get(playHistory.get(playHistory.size()-1-clickedSkipBackWardsButtonHowManyTimes)).data); // Get the last song
-                        } else {
-                            Log.v("Replay","");
-                            TryToPlaySong(songList.get(playHistory.get(0)).data); // Get first song if there is only one song
-                            Log.v("Replay", "");
-                        }
-
-                    } else {
-
-                        // Avoid out of bounds error with play history
-                        if(playHistory.size() - 1 - clickedSkipBackWardsButtonHowManyTimes > 0){
-
-                            Log.v("AAA ,",String.valueOf(playHistory.size() - 1));
-                            Log.v("BBB ",String.valueOf(clickedSkipBackWardsButtonHowManyTimes));
-
-                            clickedSkipBackWardsButtonHowManyTimes += 1;
-
-                            int songIndex = playHistory.size() - 1;
-                            songIndex = songIndex - clickedSkipBackWardsButtonHowManyTimes;
-
-                            TryToPlaySong(songList.get(playHistory.get(songIndex)).data);
-                        } else {
-                            // do nothing
-                            Log.v("CCC ","");
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    public void PlayAndIndexASong() {
+    public static void PlayAndIndexASong() {
 
         if(clickedSkipBackWardsButtonHowManyTimes > 0){
 
@@ -329,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void GetNextSongIndex(){
+    public static void GetNextSongIndex(){
 
         if (noSongHasBeenPlayedYet == true) {
 
@@ -368,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void GetRandomSongIndex() {
+    public static void GetRandomSongIndex() {
 
         max = songList.size() - 1;
         min = 0;
