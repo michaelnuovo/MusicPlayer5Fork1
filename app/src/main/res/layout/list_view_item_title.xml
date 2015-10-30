@@ -8,6 +8,7 @@
     android:paddingTop="20dp"
     android:paddingLeft="10dp"
     android:paddingRight="10dp"
+    android:background="#30000000"
     >
 
     <!--
@@ -40,7 +41,7 @@
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#FFFFFF"
+                android:textColor="#001433"
 
 
                 android:fontFamily="sans-serif-medium"
@@ -55,8 +56,17 @@
 
                 android:textSize="12dp"
                 android:textStyle="italic"
-                android:textColor="#909090"/>
+                android:textColor="#FFFFFF"/>
 
+            <TextView android:id="@+id/album"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+
+                android:textSize="12dp"
+                android:textStyle="italic"
+                android:textColor="#FFFFFF"/>
 
         </LinearLayout>
 
@@ -74,7 +84,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
                 android:textSize="12dp"
-                android:textColor="#909090"
+                android:textColor="#FFFFFF"
 
                 />
             <!--

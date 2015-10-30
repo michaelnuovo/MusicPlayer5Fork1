@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class ListAdapter extends ArrayAdapter<SongObject> {
 
@@ -41,7 +42,7 @@ public class ListAdapter extends ArrayAdapter<SongObject> {
         /* Set references to xml objects */
 
         //songHolder.albumArt = (ImageView) row.findViewById(R.id.album_art);
-        //songHolder.album = (TextView) row.findViewById(R.id.album);
+        songHolder.album = (TextView) row.findViewById(R.id.album);
         songHolder.artist = (TextView) row.findViewById(R.id.artist);
         songHolder.title = (TextView) row.findViewById(R.id.title);
         //songHolder.data = (TextView) row.findViewById(R.id.data);
@@ -58,20 +59,35 @@ public class ListAdapter extends ArrayAdapter<SongObject> {
 
         //SongHolder.albumArt.setBackground(songObject.albumArtURI); //setBackgroundResource(R.drawable.ready)
         //SongHolder.albumArt.setImageBitmap(BitmapFactory.decodeFile(songObject.albumArtURI));
-        //SongHolder.album.setText(songs.album + " - " + songs.title);
-        SongHolder.artist.setText(songObject.artist);
+        SongHolder.album.setText("from "+songObject.album);
+        SongHolder.artist.setText("by "+songObject.artist);
         SongHolder.title.setText(songObject.title);
         //SongHolder.data.setText("data" + songs.data);
+
+        /**
         SongHolder.duration.setText(
                 DateUtils.formatElapsedTime(
                         Long.parseLong(songObject.duration) / 1000
                 )); // song duration returned in ms is converted to hh:mm:ss format
+         **/
+
+        SongHolder.duration.setText(
+
+                String.format("%2d:%02d",
+                        TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(songObject.duration)),
+                        TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(songObject.duration)) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(songObject.duration)))
+                )
+        );
+
+
         return row;
+
     }
 
     static class SongHolder {
         static ImageView albumArt;
-        //static TextView album;
+        static TextView album;
         static TextView artist;
         static TextView title;
         //static TextView data;
