@@ -9,6 +9,7 @@ import java.util.List;
 class MyPageAdapter extends FragmentPagerAdapter {
 
     private List<Fragment> fragments;
+    private String title;
 
     public MyPageAdapter(FragmentManager fm, List<Fragment> fragments) {
 
@@ -27,4 +28,27 @@ class MyPageAdapter extends FragmentPagerAdapter {
 
         return this.fragments.size();
     }
+
+    @Override
+    public CharSequence getPageTitle(int position) {
+
+        if(position == 0){
+            title = "OTHER";
+        } else if (position == 1){
+            title = "EQUALIZER";
+        } else if (position == 2){
+            title = "FAVORITES";
+        } else if (position == 3) {
+            title = "TRACKS";
+        } else if (position == 4) {
+            title = "ARTISTS";
+        } else if (position == 5) {
+            title = "ALBUMS";
+        } else if (position == 6) {
+            title = "OTHER";
+        }
+
+        return title;
+    }
+
 }

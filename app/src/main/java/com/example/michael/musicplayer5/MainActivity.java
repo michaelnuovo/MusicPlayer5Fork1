@@ -1,49 +1,51 @@
 package com.example.michael.musicplayer5;
+
+import android.content.Intent;
 import android.database.Cursor;
-import android.media.MediaPlayer;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.ToggleButton;
+
+
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    /** View Pager References **/
     static MyPageAdapter pageAdapter;
     static List<Fragment> fragments;
 
-    /** List References **/
-    static ArrayList<com.example.michael.musicplayer5.SongObject> songList;
+    static ArrayList<com.example.michael.musicplayer5.SongObject> songObjectList;
     static ArrayList<String> artistList;
     static ArrayList<String> albumList;
 
-    /** Initializations **/
-    static MediaPlayer mediaPlayer = new MediaPlayer();
-    static ArrayList<Integer> playHistory = new ArrayList<>();
-    static Random randomUtil = new Random();
+    private Toolbar toolbar;
+    private TabLayout tab;
+    private ViewPager viewPager;
+    private String tabTitle;
 
-    /** Boolean Initializations **/
-    static Boolean noSongHasBeenPlayedYet = true;
-    static Boolean shuffleOn = false;
-    static Boolean loopModeOn = false;
-    static Boolean pressedPlay = false;
+    static TextView currentTitleView;
+    static TextView currentArtistView;
 
-    /** Other **/
-    static ListAdapter adapter;
-    static int max;
-    static int min;
-    static int clickedSkipBackWardsButtonHowManyTimes = 0;
+    /*
+    static String currentTitle;
+    static String currentArtist;
+    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,26 +53,151 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /** List Initializations **/
-        songList = new ArrayList<>();
+        /**
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });**/
+
+        songObjectList = new ArrayList<>();
         artistList = new ArrayList<>();
         albumList = new ArrayList<>();
 
         Cursor songListCursor = GetSongListCursor();
         MakeLists(songListCursor);
 
-        /** Fragments & Pager  **/
         fragments = getFragments();
         pageAdapter = new MyPageAdapter(getSupportFragmentManager(), fragments);
-        ViewPager viewPager = (ViewPager)findViewById(R.id.viewpager);
-        //viewPager.setPageTransformer(true, new DepthPageTransformer());
-        viewPager.setPageTransformer(true, new ZoomOutPageTransformer());
+
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        //viewPager.setPageTransformer(true, new ZoomOutPageTransformer());
+        viewPager.setPageTransformer(true, new DepthPageTransformer());
         viewPager.setAdapter(pageAdapter);
+        viewPager.setCurrentItem(3);
 
-        /** List Adapter **/
-        //adapter = new ListAdapter(this, R.layout.list_view_item_title, songList);
-        //listView.setAdapter(adapter);
+        tabTitle = GetTabTitle();
 
+        tab = (TabLayout) findViewById(R.id.tabs);
+        tab.setupWithViewPager(viewPager);
+
+        /** Buttons
+        playButton = (ToggleButton) findViewById(R.id.playButton);
+        skipForwardsButton = (ToggleButton) findViewById(R.id.skipForwards);
+        skipBackwardsButton = (ToggleButton) findViewById(R.id.skipBackwards);
+        shuffleButton = (ToggleButton) findViewById(R.id.shuffle);
+        loopButton = (ToggleButton) findViewById(R.id.loopList); **/
+
+        /*
+        StaticMediaPlayer.SetButtonsMainActivity(
+                (ToggleButton) findViewById(R.id.playButton),
+                (ToggleButton) findViewById(R.id.skipForwards),
+                (ToggleButton) findViewById(R.id.skipBackwards),
+                (ToggleButton) findViewById(R.id.shuffle),
+                (ToggleButton) findViewById(R.id.loopList),
+                (TextView) findViewById(R.id.currentTitle),
+                (TextView) findViewById(R.id.currentArtist),
+                songObjectList
+        );*/
+
+        /*******
+
+         STATIC MEDIA PLAYER CLASS LISTENERS
+
+         1) StaticMediaPlayer.setSongCompletionListener()
+         2) StaticMediaPlayer.setLoopButtonListener();
+         3) StaticMediaPlayer.setShuffleButtonListener();
+         4) StaticMediaPlayer.setPlayButtonListener();
+         5) StaticMediaPlayer.setSkipForwardsListener();
+         6) StaticMediaPlayer.setSkipBackwardsListener();
+
+         ********/
+
+        //Pass play button to static media player
+        StaticMediaPlayer.SetButtonsMainActivity(
+                (ToggleButton) findViewById(R.id.playButton),
+                songObjectList
+        );
+
+        //Set play button listener
+        StaticMediaPlayer.setPlayButtonListener();
+
+        //Set play panel title and artist
+        currentTitleView = (TextView) findViewById(R.id.currentTitle);
+        currentArtistView = (TextView) findViewById(R.id.currentArtist);
+
+        //currentTitleView.setText(songObject.title);
+        //currentArtistView.setText(songObject.artist);
+
+        TitlePanelClickListener();
+
+        float elevation = 2;
+        float density = getResources().getDisplayMetrics().density;
+
+        View v = findViewById(R.id.shadowView);
+        v.setBackgroundDrawable(new RoundRectDrawableWithShadow(
+                getResources(), Color.BLACK, 0,
+                elevation * density, ((elevation + 1) * density) + 1
+        ));
+
+        /**
+        currentTitleView = (TextView) findViewById(R.id.currentTitle);
+        currentArtistView = (TextView) findViewById(R.id.currentArtist);**/
+
+    }
+
+    public String GetTabTitle(){
+        int currentTabIndex = viewPager.getCurrentItem();
+        String title = "";
+        if (currentTabIndex == 3) {
+            title = "TRACKS";
+        }
+        return title;
+    }
+
+    public void TitlePanelClickListener(){
+
+        LinearLayout TitlePanel = (LinearLayout) findViewById(R.id.activity_main_track_info);
+
+        /** Title Listener **/
+        TitlePanel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // Open the play panel
+
+                Intent intent = new Intent(MainActivity.this, PlayPanelActivity.class);
+                //intent.putExtra("key", value); //Optional parameters
+                MainActivity.this.startActivity(intent);
+                //overridePendingTransition(R.anim.slide_up, R.anim.dont_move);
+
+            }
+        });
+    }
+
+    private String GetAlbumArtURI(String[] albumID) {
+        File file = new File(Environment.getExternalStorageDirectory() + "/Download/Song.mp3");
+        SingleMediaScanner singleMediaScanner = new SingleMediaScanner(this, file);
+
+        final Cursor mCursor = getContentResolver().query(
+                MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                new String[]{MediaStore.Audio.Albums.ALBUM_ART},
+                MediaStore.Audio.Albums._ID + "=?",
+                albumID,
+                null
+        );
+
+        if (mCursor.moveToFirst()) {
+            Log.v("Here: ","here");
+            return mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+        }
+        else {
+            mCursor.close();
+            return null;
+        }
     }
 
     private List<Fragment> getFragments() {
@@ -80,106 +207,16 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize and add fragment objects to the array list
 
-        fList.add(MyFragment.newInstance(songList));
-        fList.add(MyFragment.newInstance(songList));
-        fList.add(MyFragment.newInstance(songList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
 
         // Return the fragment object array list for adaption to the pager view
         return fList;
-    }
-
-    public static void PlayAndIndexASong() {
-
-        if(clickedSkipBackWardsButtonHowManyTimes > 0){
-
-            Log.v("Play history size: ",String.valueOf(playHistory.size()));
-            Log.v("Clicked back button: ",String.valueOf(clickedSkipBackWardsButtonHowManyTimes));
-            Log.v("Difference: ", String.valueOf(playHistory.size() - clickedSkipBackWardsButtonHowManyTimes));
-
-            int songIndex = playHistory.size() - 1 - clickedSkipBackWardsButtonHowManyTimes + 1;
-            TryToPlaySong(songList.get(playHistory.get(songIndex)).data);
-            clickedSkipBackWardsButtonHowManyTimes -=1 ;
-
-        }else{
-
-            if (shuffleOn == true) {
-
-                GetRandomSongIndex();
-
-            } else {
-
-                GetNextSongIndex();
-            }
-        }
-    }
-
-    public static void GetNextSongIndex(){
-
-        if (noSongHasBeenPlayedYet == true) {
-
-            TryToPlaySong(songList.get(0).data);
-            noSongHasBeenPlayedYet = false;
-
-            playHistory.add(0);
-
-
-        } else {
-            Log.v("HELLO WORLD","HELLO WORLD");
-            // To avoid out of bounds error
-            if(playHistory.get(playHistory.size()-1) // returns an index
-                    == songList.size()-1) // the last index
-            { // <--
-
-                Log.v("TAG","HERE");
-
-                TryToPlaySong(songList.get(0).data);
-
-
-                playHistory.add(0);
-
-            } else {
-
-                Log.v("TAG","HERE AGAIN");
-
-                int songIndex = playHistory.get(playHistory.size() - 1); // get the last song index in the play history
-                songIndex = songIndex + 1; // add one to it
-
-                TryToPlaySong(songList.get(songIndex).data); // play it
-
-                playHistory.add(songIndex); // add it to the play history
-
-            }
-        }
-    }
-
-    public static void GetRandomSongIndex() {
-
-        max = songList.size() - 1;
-        min = 0;
-
-        if(noSongHasBeenPlayedYet == true){
-
-            int songIndex = randomUtil.nextInt((max - min) + 1) + min;
-
-            TryToPlaySong(songList.get(songIndex).data);
-            noSongHasBeenPlayedYet = false;
-
-            playHistory.add(songIndex);
-
-        } else {
-
-            int songIndex = randomUtil.nextInt((max - min) + 1) + min;
-            Log.v("RANDOM AAA","");
-            while(songIndex == playHistory.get(playHistory.size()-1)){
-                Log.v("RANDOM BBB","");
-                songIndex = randomUtil.nextInt((max - min) + 1) + min;
-            }
-            Log.v("RANDOM CCC","");
-            TryToPlaySong(songList.get(songIndex).data);
-            playHistory.add(songIndex);
-
-        }
-
     }
 
     private Cursor GetSongListCursor() {
@@ -203,80 +240,101 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void MakeLists(Cursor mCursor) {
-        if (mCursor.moveToFirst()) {
-            do {
 
-                // Initialize songObject
-                SongObject songObject = new SongObject();
+        try{
 
-                // Add albumURI
-                String[] albumID = {mCursor.getString(5)};
-                songObject.albumArtURI = GetAlbumArtURI(albumID);
+            if (mCursor.moveToFirst()) {
 
-                // Add album
-                String album = mCursor.getString(0);
-                songObject.album = album;
-                if(!artistList.contains(album)){artistList.add(album);} // Add album to albumList
+                do {
 
-                // Add artist
-                if (mCursor.getString(1).equals("<unknown>")) {
+                    // Initialize songObject
+                    SongObject songObject = new SongObject();
 
-                    String artist = "Unknown Artist";
-                    songObject.artist = artist;
+                    // Add albumURI
+                    String[] albumID = {mCursor.getString(5)};
+                    songObject.albumArtURI = GetAlbumArtURI(albumID);
 
-                    if(!artistList.contains(artist)){artistList.add(artist);} // Add artist to artistList
-                }
-                else {
+                    // Add album
+                    String album = mCursor.getString(0);
+                    songObject.album = album;
+                    if(!albumList.contains(album)){albumList.add(album);} // Add album to albumList
 
-                    String artist = mCursor.getString(1);
-                    songObject.artist = artist;
+                    // Add artist
+                    if (mCursor.getString(1).equals("<unknown>")) {
 
-                    if(!artistList.contains(artist)){artistList.add(artist);} // Add artist to artistList
-                }
+                        String artist = "Unknown Artist";
+                        songObject.artist = artist;
 
+                        if(!artistList.contains(artist)){artistList.add(artist);} // Add artist to artistList
+                    }
+                    else {
 
-                songObject.title = mCursor.getString(2);
-                songObject.data = mCursor.getString(3);
-                songObject.duration = mCursor.getString(4);
+                        String artist = mCursor.getString(1);
+                        songObject.artist = artist;
 
-                songList.add(songObject);
+                        if(!artistList.contains(artist)){artistList.add(artist);} // Add artist to artistList
+                    }
 
 
+                    songObject.title = mCursor.getString(2);
+                    songObject.data = mCursor.getString(3);
+                    songObject.duration = mCursor.getString(4);
 
-            } while (mCursor.moveToNext());
+                    songObjectList.add(songObject);
+
+                } while (mCursor.moveToNext());
+            }
+
+        } finally {
+
+            mCursor.close();
+
         }
-        mCursor.close();
     }
 
-    public static void TryToPlaySong(String string) {
-        try {PlaySong(string);}
-        catch (IllegalArgumentException e) {e.printStackTrace();}
-        catch (IllegalStateException e) {e.printStackTrace();}
-        catch (IOException e) {e.printStackTrace();}
-    }
 
-    private static void PlaySong(String path) throws IllegalArgumentException, IllegalStateException, IOException {
-        //String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
-        mediaPlayer.reset();
-        mediaPlayer.setDataSource(path);
-        mediaPlayer.prepare();
-        mediaPlayer.start();
+    /**
+     private void SetBackground(){
+     // so the albumList is an existing global variable
+     // return a random index from GetRandomSongIndex
 
-    }
+     ViewPager pager = (ViewPager)findViewById(R.id.viewpager);
+     //ImageView backgroundView = (ImageView) findViewById(R.id.appbackground);
 
-    private String GetAlbumArtURI(String[] albumID) {
-        File file = new File(Environment.getExternalStorageDirectory() + "/Download/Song.mp3");
-        SingleMediaScanner singleMediaScanner = new SingleMediaScanner(this, file);
-        final Cursor mCursor = getContentResolver().query(
-                MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Audio.Albums.ALBUM_ART},
-                MediaStore.Audio.Albums._ID + "=?",
-                albumID,
-                null
-        );
-        if (mCursor.moveToFirst()) {return mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));}
-        else {return null;}
-    }
+     max = songObjectList.size() - 1;
+     min = 0;
+     int songIndex;
+     Bitmap bitMap;
+
+     //pager.setBackgroundColor(Color.BLACK);
+
+     // Need to change this so the loop doesn't continue forever if there are no album uris
+     do {
+     songIndex = randomUtil.nextInt((max - min) + 1) + min;
+     bitMap = BitmapFactory.decodeFile(songObjectList.get(songIndex).albumArtURI); // Create bitmap
+     } while (songObjectList.get(songIndex).albumArtURI == null);
+
+
+     ScreenDimensions screenDimensions = new ScreenDimensions(this);
+     int fromX = 0;
+     int negativeMargin = bitMap.getWidth() - screenDimensions.width;
+
+     //Set Negative Margins for background
+     //ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) backgroundView.getLayoutParams();
+     //p.setMargins(0, 0, negativeMargin, 0); // p.setMargins(l, t, r, b);
+     //backgroundView.requestLayout();
+
+     //Set Bit Map to Monocrhome
+     BitMapToGrayScale converter = new BitMapToGrayScale();
+     bitMap = converter.ToGrayScale(bitMap);
+
+     //Set Bit Map As Background
+     ResizeBitMap resizeBitMap = new ResizeBitMap(this);
+     bitMap = resizeBitMap.resize(bitMap);
+     Drawable drawable = new BitmapDrawable(getResources(), bitMap); // Convert bitmap to drawable
+     //pager.setBackgroundDrawable(drawable);
+
+     }**/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

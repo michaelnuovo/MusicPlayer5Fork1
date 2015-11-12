@@ -1,9 +1,10 @@
 package com.example.michael.musicplayer5;
 
 
-import android.app.Activity;
 import android.content.Context;
-import android.text.format.DateUtils;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -19,73 +24,18 @@ public class ListAdapter extends ArrayAdapter<SongObject> {
 
     Context context;
     int layoutResourceId;
-    ArrayList<SongObject> data = null;
+    ArrayList<SongObject> songObjectList;
 
-    public ListAdapter(Context context, int layoutResourceId, ArrayList<SongObject> data) {
-        super(context, layoutResourceId, data);
+    public ListAdapter(Context context, int layoutResourceId, ArrayList<SongObject> songObjectList) {
+
+        super(context, layoutResourceId, songObjectList);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
-        this.data = data;
+        this.songObjectList = songObjectList;
     }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    static class ViewHolder {
 
-        View row = convertView;
-
-        // if (row == null) { // <- Disable recycle logic
-        LayoutInflater inflater = ((Activity) context).getLayoutInflater();
-        row = inflater.inflate(layoutResourceId, parent, false);
-
-        SongHolder songHolder = new SongHolder();
-
-        /* Set references to xml objects */
-
-        //songHolder.albumArt = (ImageView) row.findViewById(R.id.album_art);
-        songHolder.album = (TextView) row.findViewById(R.id.album);
-        songHolder.artist = (TextView) row.findViewById(R.id.artist);
-        songHolder.title = (TextView) row.findViewById(R.id.title);
-        //songHolder.data = (TextView) row.findViewById(R.id.data);
-        songHolder.duration = (TextView) row.findViewById(R.id.duration);
-
-        //     row.setTag(holder); // <- Disable recycle logic
-        // } else { // <- Disable recycle logic
-        //     holder = (SongHolder) row.getTag(); // <- Disable recycle logic
-        // } // <- Disable recycle logic
-
-        SongObject songObject = data.get(position); // Maps array list object properties to adapter "object model"
-
-        /* Map song object properties to xml objects */
-
-        //SongHolder.albumArt.setBackground(songObject.albumArtURI); //setBackgroundResource(R.drawable.ready)
-        //SongHolder.albumArt.setImageBitmap(BitmapFactory.decodeFile(songObject.albumArtURI));
-        SongHolder.album.setText("from "+songObject.album);
-        SongHolder.artist.setText("by "+songObject.artist);
-        SongHolder.title.setText(songObject.title);
-        //SongHolder.data.setText("data" + songs.data);
-
-        /**
-        SongHolder.duration.setText(
-                DateUtils.formatElapsedTime(
-                        Long.parseLong(songObject.duration) / 1000
-                )); // song duration returned in ms is converted to hh:mm:ss format
-         **/
-
-        SongHolder.duration.setText(
-
-                String.format("%2d:%02d",
-                        TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(songObject.duration)),
-                        TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(songObject.duration)) -
-                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(songObject.duration)))
-                )
-        );
-
-
-        return row;
-
-    }
-
-    static class SongHolder {
         static ImageView albumArt;
         static TextView album;
         static TextView artist;
@@ -93,4 +43,135 @@ public class ListAdapter extends ArrayAdapter<SongObject> {
         //static TextView data;
         static TextView duration;
     }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+
+        // Get the data item for this position
+        SongObject songObject = songObjectList.get(position);
+
+
+        ViewHolder viewHolder; // view lookup cache stored in tag
+
+        // if an existing view is not being reused
+        if (convertView == null) {
+
+            viewHolder = new ViewHolder();
+            LayoutInflater inflater = LayoutInflater.from(getContext());
+
+            convertView = inflater.inflate(R.layout.list_view_item, parent, false);
+            convertView.setTag(viewHolder);
+
+        // if an existing view is being reused
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
+            //viewHolder.albumArt = null;
+        }
+
+        // Set view holder references
+
+        //viewHolder.album = (TextView) convertView.findViewById(R.id.album);
+        viewHolder.artist = (TextView) convertView.findViewById(R.id.artist);
+        viewHolder.title = (TextView) convertView.findViewById(R.id.title);
+        viewHolder.albumArt = (ImageView) convertView.findViewById(R.id.album_art);
+        //viewHolder.duration = (TextView) convertView.findViewById(R.id.duration);
+
+        // Set values to referenced view objects
+
+        //viewHolder.album.setText(songObject.album);
+        viewHolder.artist.setText(songObject.artist);
+        viewHolder.title.setText(songObject.title);
+        //viewHolder.duration.setText(FormatTime(songObject.duration));
+        //viewHolder.albumArt.setImageBitmap(BitmapFactory.decodeFile(songObject.albumArtURI));
+
+        // Set a temporary gray background to the image view
+
+        //viewHolder.albumArt.setBackgroundResource(R.drawable.grayalbumart);
+
+        // Load album art asynchronously for smoother scrolling experience
+
+        //new ImageLoader(viewHolder.albumArt).execute(songObject.albumArtURI);
+
+        Log.v("albumArtURI",String.valueOf(songObject.albumArtURI));
+        Log.v("artist",String.valueOf(songObject.artist));
+
+
+        /** SET ALBUM ART TO LIST ITEMS USING PICASSO IMAGE LIBRARY **/
+
+        if(songObject.albumArtURI != null){
+
+            File f = new File(songObject.albumArtURI);
+
+            /** CODE WITHOUT CIRCULAR TRANSFORM
+            Picasso.with(viewHolder.albumArt.getContext())
+                    .load(f)
+                    .placeholder(R.drawable.grayalbumart)
+                    .into(viewHolder.albumArt);**/
+
+            /** CODE WITH CIRCULAR TRANSFORM **/
+            Picasso.with(viewHolder.albumArt.getContext())
+                    .load(f)
+                    .transform(new CircleTransform())
+                    .placeholder(R.drawable.blackcircle)
+                    .into(viewHolder.albumArt);
+        } else {
+
+            /** CODE WITHOUT CIRCULAR TRANSFORM
+            Picasso.with(viewHolder.albumArt.getContext())
+                    .load(songObject.albumArtURI)
+                    .placeholder(R.drawable.grayalbumart)
+                    .into(viewHolder.albumArt);**/
+
+            /** CODE WITH CIRCULAR TRANSFORM **/
+
+            Picasso.with(viewHolder.albumArt.getContext())
+                    .load(songObject.albumArtURI)
+                    .transform(new CircleTransform())
+                    .placeholder(R.drawable.blackcircle)
+                    .into(viewHolder.albumArt);
+        }
+
+        return convertView;
+    }
+
+    public String FormatTime(String duration){
+
+        return String.format("%2d:%02d",
+                TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(duration)),
+                TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(duration)) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(Long.parseLong(duration))));
+         /*
+         // song duration returned in ms is converted to hh:mm:ss format
+         return DateUtils.formatElapsedTime(Long.parseLong(duration) / 1000);
+        */
+    }
+
+    public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
+
+        private final WeakReference<ImageView> mWeakImageView;
+
+        public ImageLoader(ImageView im) {
+
+            mWeakImageView = new WeakReference<>(im);
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... uri) {
+
+            return BitmapFactory.decodeFile(uri[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+
+            ImageView imageView = mWeakImageView.get();
+            if (imageView != null) {
+                // set the bitmap
+                imageView.setImageBitmap(bitmap);
+            }
+        }
+    }
+
 }
+
+
