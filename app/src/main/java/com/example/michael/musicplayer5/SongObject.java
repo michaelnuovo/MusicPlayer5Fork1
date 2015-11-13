@@ -8,11 +8,11 @@ public class SongObject implements Parcelable{
     // My Code
 
     public String albumArtURI;
-    public String album;
+    public String albumTitle;
     public String artist;
-    public String title;
-    public String data;
-    public String duration;
+    public String songTitle;
+    public String songPath;
+    public String songDuration;
 
     public SongObject(){
         super();
@@ -39,11 +39,11 @@ public class SongObject implements Parcelable{
 
     public void readFromParcel(Parcel in) {
         albumArtURI = in.readString();
-        album = in.readString();
+        albumTitle = in.readString();
         artist = in.readString();
-        title = in.readString();
-        data = in.readString();
-        duration = in.readString();
+        songTitle = in.readString();
+        songPath = in.readString();
+        songDuration = in.readString();
 
     }
     public int describeContents() {
@@ -52,11 +52,11 @@ public class SongObject implements Parcelable{
 
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(albumArtURI);
-        dest.writeString(album);
+        dest.writeString(albumTitle);
         dest.writeString(artist);
-        dest.writeString(title);
-        dest.writeString(data);
-        dest.writeString(duration);
+        dest.writeString(songTitle);
+        dest.writeString(songPath);
+        dest.writeString(songDuration);
 
     }
 }

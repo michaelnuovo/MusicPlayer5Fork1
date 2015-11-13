@@ -20,13 +20,13 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-public class ListAdapter extends ArrayAdapter<SongObject> {
+public class MyListAdapterTracks extends ArrayAdapter<SongObject> {
 
     Context context;
     int layoutResourceId;
     ArrayList<SongObject> songObjectList;
 
-    public ListAdapter(Context context, int layoutResourceId, ArrayList<SongObject> songObjectList) {
+    public MyListAdapterTracks(Context context, int layoutResourceId, ArrayList<SongObject> songObjectList) {
 
         super(context, layoutResourceId, songObjectList);
         this.layoutResourceId = layoutResourceId;
@@ -80,7 +80,7 @@ public class ListAdapter extends ArrayAdapter<SongObject> {
 
         //viewHolder.album.setText(songObject.album);
         viewHolder.artist.setText(songObject.artist);
-        viewHolder.title.setText(songObject.title);
+        viewHolder.title.setText(songObject.songTitle);
         //viewHolder.duration.setText(FormatTime(songObject.duration));
         //viewHolder.albumArt.setImageBitmap(BitmapFactory.decodeFile(songObject.albumArtURI));
 

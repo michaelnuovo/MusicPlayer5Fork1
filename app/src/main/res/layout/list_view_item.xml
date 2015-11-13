@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:weightSum="10"
+    android:background="#191919"
+    android:padding="10dp"
+    android:gravity="center"
+    >
+
+    <ImageView
+        android:id="@+id/album_art"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:scaleType="centerCrop"
+        android:layout_marginRight="10dp"
+        />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="8">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#ffffff"
+            android:textSize="14dp"
+            android:singleLine="true"
+            android:layout_gravity="bottom|left"
+            android:layout_weight="9"
+            />
+
+        <!-- Artist -->
+        <TextView android:id="@+id/artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="10dp"
+            android:gravity="left"
+            android:textColor="#AEAEAE"
+            android:singleLine="true"
+            android:layout_gravity="bottom"
+            />
+
+        <!-- Duration
+        <TextView android:id="@+id/duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="10dp"
+            android:gravity="left"
+            android:textColor="#AEAEAE"
+            android:singleLine="true"
+            android:layout_gravity="bottom"
+            />-->
+
+    </LinearLayout>
+
+    <!-- Dots Icon -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:gravity="right|center"
+        android:layout_weight="2">
+
+        <!--
+        <ImageView
+            android:id="@+id/mainActivityStarOn"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@android:drawable/btn_star">
+        </ImageView>
+        -->
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/dotsvertwhite">
+        </ImageView>
+    </LinearLayout>
+</LinearLayout>
+
+<!--
+android:background="@android:drawable/ic_media_play">
+android:background="@android:drawable/ic_media_next">
+etc
+-->

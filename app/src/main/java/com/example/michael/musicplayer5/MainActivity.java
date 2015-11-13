@@ -27,12 +27,12 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    static MyPageAdapter pageAdapter;
+    static MyPageAdapterMain pageAdapter;
     static List<Fragment> fragments;
 
-    static ArrayList<com.example.michael.musicplayer5.SongObject> songObjectList;
-    static ArrayList<String> artistList;
-    static ArrayList<String> albumList;
+    static ArrayList<SongObject> songObjectList;
+    static ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
+    static ArrayList<ArtistObject> artistObjectList = new ArrayList<>();
 
     private Toolbar toolbar;
     private TabLayout tab;
@@ -64,22 +64,18 @@ public class MainActivity extends AppCompatActivity {
         });**/
 
         songObjectList = new ArrayList<>();
-        artistList = new ArrayList<>();
-        albumList = new ArrayList<>();
 
         Cursor songListCursor = GetSongListCursor();
         MakeLists(songListCursor);
 
         fragments = getFragments();
-        pageAdapter = new MyPageAdapter(getSupportFragmentManager(), fragments);
+        pageAdapter = new MyPageAdapterMain(getSupportFragmentManager(), fragments);
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         //viewPager.setPageTransformer(true, new ZoomOutPageTransformer());
         viewPager.setPageTransformer(true, new DepthPageTransformer());
         viewPager.setAdapter(pageAdapter);
         viewPager.setCurrentItem(3);
-
-        tabTitle = GetTabTitle();
 
         tab = (TabLayout) findViewById(R.id.tabs);
         tab.setupWithViewPager(viewPager);
@@ -148,15 +144,30 @@ public class MainActivity extends AppCompatActivity {
         currentArtistView = (TextView) findViewById(R.id.currentArtist);**/
 
     }
+    private List<Fragment> getFragments() {
 
-    public String GetTabTitle(){
-        int currentTabIndex = viewPager.getCurrentItem();
-        String title = "";
-        if (currentTabIndex == 3) {
-            title = "TRACKS";
-        }
-        return title;
+        // An empty array list
+        List<Fragment> fList = new ArrayList<Fragment>();
+
+        // Initialize and add fragment objects to the array list
+
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));  // 3 - TRACKS
+        fList.add(MyFragmentArtists.newInstance(artistObjectList)); // 4 - ARTISTS
+
+        Log.v("TAG:","Adding fragments");
+
+        fList.add(MyFragmentAlbums.newInstance(albumObjectList));
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+
+        // Return the fragment object array list for adaption to the pager view
+        return fList;
     }
+
+
+
 
     public void TitlePanelClickListener(){
 
@@ -200,24 +211,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private List<Fragment> getFragments() {
 
-        // An empty array list
-        List<Fragment> fList = new ArrayList<Fragment>();
-
-        // Initialize and add fragment objects to the array list
-
-        fList.add(MyFragmentTracks.newInstance(songObjectList));
-        fList.add(MyFragmentTracks.newInstance(songObjectList));
-        fList.add(MyFragmentTracks.newInstance(songObjectList));
-        fList.add(MyFragmentTracks.newInstance(songObjectList));
-        fList.add(MyFragmentTracks.newInstance(songObjectList));
-        fList.add(MyFragmentTracks.newInstance(songObjectList));
-        fList.add(MyFragmentTracks.newInstance(songObjectList));
-
-        // Return the fragment object array list for adaption to the pager view
-        return fList;
-    }
 
     private Cursor GetSongListCursor() {
 
@@ -254,39 +248,102 @@ public class MainActivity extends AppCompatActivity {
                     String[] albumID = {mCursor.getString(5)};
                     songObject.albumArtURI = GetAlbumArtURI(albumID);
 
-                    // Add album
-                    String album = mCursor.getString(0);
-                    songObject.album = album;
-                    if(!albumList.contains(album)){albumList.add(album);} // Add album to albumList
+                    // add albumTitle
+                    String albumTitle = mCursor.getString(0);
+                    songObject.albumTitle = albumTitle;
 
-                    // Add artist
-                    if (mCursor.getString(1).equals("<unknown>")) {
+                    // Add artist or add "Unknown Artist"
+                    String artist = mCursor.getString(1);
+                    if (artist.equals("<unknown>")) {
 
-                        String artist = "Unknown Artist";
+                        artist = "Unknown Artist";
                         songObject.artist = artist;
-
-                        if(!artistList.contains(artist)){artistList.add(artist);} // Add artist to artistList
                     }
                     else {
 
-                        String artist = mCursor.getString(1);
+                        artist = mCursor.getString(1);
                         songObject.artist = artist;
+                    }
 
-                        if(!artistList.contains(artist)){artistList.add(artist);} // Add artist to artistList
+                    String songTitle = mCursor.getString(2);
+                    songObject.songTitle = songTitle;
+
+                    String songPath = mCursor.getString(3);
+                    songObject.songPath = songPath;
+
+                    String songDuration = mCursor.getString(4);
+                    songObject.songDuration = songDuration;
+
+                    songObjectList.add(songObject);
+
+                    String albumArtist = songObject.artist; // can an album have more than one artist? yes...
+                    String albumArtURI = songObject.albumArtURI;
+
+                    // if albumObjectList is empty, add a new album object
+                    // then check if there is an albumObject in the list where albumObject.albumTitle = songObject.albumTitle
+                    // if yes, add the songObject to the existing albumObjects albumObject.songObjectList
+                    // if not, create a new albumObject, add the songObject to albumObject.songObjectList
+                    // we also need to increment the albumTrackCount in the process
+
+                    if(albumObjectList.isEmpty()){
+                        albumObjectList.add(new AlbumObject(albumTitle,albumArtist,albumArtURI,songObject));
+                    } else {
+
+                        boolean bool = false;
+                        for(int i = 0; i < albumObjectList.size(); i++) {
+
+                            if(albumObjectList.get(i).albumTitle.equals(albumTitle)) {
+                                albumObjectList.get(i).songObjectList.add(songObject);
+                                albumObjectList.get(i).albumTrackCount += 1;
+
+                                bool = true;
+                            }
+                        }
+
+                        if(bool == false){
+                            AlbumObject newAlbumObject = new AlbumObject(albumTitle,albumArtist,albumArtURI,songObject);
+                            newAlbumObject.albumTrackCount +=1;
+                            albumObjectList.add(newAlbumObject);
+                        }
+                    }
+
+                    // Do the same thing for the artistObjectList
+
+                    if(artistObjectList.isEmpty()){
+                        artistObjectList.add(new ArtistObject(songObject));
+                    } else {
+
+                        boolean bool = false;
+                        for(int i = 0; i < artistObjectList.size(); i++) {
+
+                            if(artistObjectList.get(i).artistName.equals(artist)) {
+                                artistObjectList.get(i).songObjectList.add(songObject);
+                                artistObjectList.get(i).artistTrackCount += 1;
+
+                                bool = true;
+
+                            }
+
+                        }
+
+                        if(bool == false){
+                            ArtistObject newArtistObject = new ArtistObject(songObject);
+                            newArtistObject.artistTrackCount += 1;
+                            artistObjectList.add(newArtistObject);
+                        }
                     }
 
 
-                    songObject.title = mCursor.getString(2);
-                    songObject.data = mCursor.getString(3);
-                    songObject.duration = mCursor.getString(4);
-
-                    songObjectList.add(songObject);
 
                 } while (mCursor.moveToNext());
             }
 
         } finally {
 
+            // Find unique number of instancse of albums
+            //artistObjectList.setAlbumsCounter();
+
+            // Close cursor
             mCursor.close();
 
         }
