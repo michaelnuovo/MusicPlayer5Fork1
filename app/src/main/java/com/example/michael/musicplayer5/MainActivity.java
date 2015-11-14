@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     static TextView currentTitleView;
     static TextView currentArtistView;
 
+    // TEST
+
     /*
     static String currentTitle;
     static String currentArtist;
