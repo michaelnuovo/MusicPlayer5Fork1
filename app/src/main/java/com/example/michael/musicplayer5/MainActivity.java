@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     static TextView currentTitleView;
     static TextView currentArtistView;
 
-    // TEST
+    // TEST TEST
 
     /*
     static String currentTitle;
