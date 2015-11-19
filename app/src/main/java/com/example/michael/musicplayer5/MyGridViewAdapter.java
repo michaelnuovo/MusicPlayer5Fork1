@@ -48,7 +48,7 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
         // Get the data item for this position
         AlbumObject albumObject = albumObjectList.get(position);
 
-        Log.v("TAG: grid view adapter",String.valueOf(albumObjectList.get(position)));
+
 
         ViewHolder viewHolder; // view lookup cache stored in tag
 

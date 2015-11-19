@@ -2,7 +2,6 @@ package com.example.michael.musicplayer5;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -30,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     static MyPageAdapterMain pageAdapter;
     static List<Fragment> fragments;
 
-    static ArrayList<SongObject> songObjectList;
+    static ArrayList<SongObject> songObjectList = new ArrayList<>();
     static ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
     static ArrayList<ArtistObject> artistObjectList = new ArrayList<>();
 
@@ -65,8 +64,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });**/
 
-        songObjectList = new ArrayList<>();
 
+
+        songObjectList = new ArrayList<>();
+        scanMedia();
         Cursor songListCursor = GetSongListCursor();
         MakeLists(songListCursor);
 
@@ -105,23 +106,23 @@ public class MainActivity extends AppCompatActivity {
 
          STATIC MEDIA PLAYER CLASS LISTENERS
 
-         1) StaticMediaPlayer.setSongCompletionListener()
-         2) StaticMediaPlayer.setLoopButtonListener();
-         3) StaticMediaPlayer.setShuffleButtonListener();
-         4) StaticMediaPlayer.setPlayButtonListener();
-         5) StaticMediaPlayer.setSkipForwardsListener();
-         6) StaticMediaPlayer.setSkipBackwardsListener();
+         StaticMediaPlayer.setSongCompletionListener()
+         StaticMediaPlayer.setLoopButtonListener();
+         StaticMediaPlayer.setShuffleButtonListener();
+         StaticMediaPlayer.setPlayButtonListener();
+         StaticMediaPlayer.setSkipForwardsListener();
+         StaticMediaPlayer.setSkipBackwardsListener();
 
          ********/
 
         //Pass play button to static media player
-        StaticMediaPlayer.SetButtonsMainActivity(
+        StaticMediaPlayer_OLD.SetButtonsMainActivity(
                 (ToggleButton) findViewById(R.id.playButton),
                 songObjectList
         );
 
         //Set play button listener
-        StaticMediaPlayer.setPlayButtonListener();
+        StaticMediaPlayer_OLD.setPlayButtonListener();
 
         //Set play panel title and artist
         currentTitleView = (TextView) findViewById(R.id.currentTitle);
@@ -132,6 +133,9 @@ public class MainActivity extends AppCompatActivity {
 
         TitlePanelClickListener();
 
+
+
+        /**
         float elevation = 2;
         float density = getResources().getDisplayMetrics().density;
 
@@ -139,13 +143,14 @@ public class MainActivity extends AppCompatActivity {
         v.setBackgroundDrawable(new RoundRectDrawableWithShadow(
                 getResources(), Color.BLACK, 0,
                 elevation * density, ((elevation + 1) * density) + 1
-        ));
+        ));**/
 
         /**
         currentTitleView = (TextView) findViewById(R.id.currentTitle);
         currentArtistView = (TextView) findViewById(R.id.currentArtist);**/
 
     }
+
     private List<Fragment> getFragments() {
 
         // An empty array list
@@ -159,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
         fList.add(MyFragmentTracks.newInstance(songObjectList));  // 3 - TRACKS
         fList.add(MyFragmentArtists.newInstance(artistObjectList)); // 4 - ARTISTS
 
-        Log.v("TAG:","Adding fragments");
+
 
         fList.add(MyFragmentAlbums.newInstance(albumObjectList));
         fList.add(MyFragmentTracks.newInstance(songObjectList));
@@ -167,9 +172,6 @@ public class MainActivity extends AppCompatActivity {
         // Return the fragment object array list for adaption to the pager view
         return fList;
     }
-
-
-
 
     public void TitlePanelClickListener(){
 
@@ -191,9 +193,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void scanMedia(){
+
+        File file = new File(Environment.getExternalStorageDirectory() + "/Music");
+        new SingleMediaScanner(this, file);
+    }
+
     private String GetAlbumArtURI(String[] albumID) {
-        File file = new File(Environment.getExternalStorageDirectory() + "/Download/Song.mp3");
-        SingleMediaScanner singleMediaScanner = new SingleMediaScanner(this, file);
 
         final Cursor mCursor = getContentResolver().query(
                 MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
@@ -204,8 +210,11 @@ public class MainActivity extends AppCompatActivity {
         );
 
         if (mCursor.moveToFirst()) {
-            Log.v("Here: ","here");
-            return mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+
+            String var = mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+            //DatabaseUtils.dumpCursor(mCursor);
+            mCursor.close();
+            return var;
         }
         else {
             mCursor.close();
@@ -220,7 +229,12 @@ public class MainActivity extends AppCompatActivity {
         // Set getContentResolver().query(contentURI, projection, selection, null, order) arguments
 
         Uri contentURI = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Audio.Media.ALBUM,MediaStore.Audio.Media.ARTIST,MediaStore.Audio.Media.TITLE,MediaStore.Audio.Media.DATA,MediaStore.Audio.Media.DURATION,MediaStore.Audio.Media.ALBUM_ID};
+        String[] projection = {MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.DURATION,
+                MediaStore.Audio.Media.ALBUM_ID};
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
         String order = MediaStore.Audio.Media.TITLE + " ASC";
 
@@ -232,6 +246,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize a local cursor object with a query and return the cursor object
         final Cursor mCursor = getContentResolver().query(contentURI, projection, selection, null, order);// Run getContentResolver query
+        //DatabaseUtils.dumpCursor(mCursor);
         return mCursor;
     }
 
@@ -243,12 +258,73 @@ public class MainActivity extends AppCompatActivity {
 
                 do {
 
+                    //Log.v("ASD@#C ","");
+
                     // Initialize songObject
                     SongObject songObject = new SongObject();
+
+                    String songTitle = mCursor.getString(2);
+                    songObject.songTitle = songTitle;
+
+                    String songPath = mCursor.getString(3);
+                    songObject.songPath = songPath;
+
+                    String songDuration = mCursor.getString(4);
+                    songObject.songDuration = songDuration;
 
                     // Add albumURI
                     String[] albumID = {mCursor.getString(5)};
                     songObject.albumArtURI = GetAlbumArtURI(albumID);
+
+
+
+                    // If albumArtURI return null, then get some other image URI
+                    if(songObject.albumArtURI != null){
+                        // leave as is
+
+                    } else { // search folder for image file e.g. a jpg
+                        String dirPath = songObject.songPath;
+                        dirPath = dirPath.substring(0,dirPath.lastIndexOf('/'));
+                        File mFile = new File(dirPath);
+                        //Log.v("TAG dirPath", String.valueOf(dirPath));
+                        File[] mFiles = mFile.listFiles();
+
+                        for(File aFile : mFiles){
+
+                            if(IsImage.test(aFile) == true){
+
+                                // Get the absolute path of the file if its an image
+                                songObject.albumArtURI = aFile.getAbsolutePath();
+                                //Log.v("TAG URI PATH MAIN",String.valueOf(songObject.albumArtURI));
+                                break;
+
+                            } else {
+                                //get some other image
+
+                                //songObject.albumArtURI = String.valueOf(Uri.parse("android.resource://"+PACKAGE_NAME+"/" + R.drawable.mdefault));
+
+                                // data/data/yourapp/app_data/imageDir
+
+
+                                /*
+                                Log.v("TAG A","");
+                                Bitmap bm = BitmapFactory.decodeResource(this.getResources(), R.drawable.mdefault);
+
+
+                                Log.v("TAG B","");
+                                ImageUtil.saveToInternalSorage(this, "imageDir", "defaultImage", bm);
+                                Log.v("TAG C", "");
+                                String PACKAGE_NAME = getApplicationContext().getPackageName();
+                                Log.v("TAG D","");
+                                songObject.albumArtURI = "data/data/"+PACKAGE_NAME+"/app_data/" + "imageDir";
+                                Log.v("TAG E","");*/
+
+
+
+
+                            }
+                        }
+                    }
 
                     // add albumTitle
                     String albumTitle = mCursor.getString(0);
@@ -267,14 +343,6 @@ public class MainActivity extends AppCompatActivity {
                         songObject.artist = artist;
                     }
 
-                    String songTitle = mCursor.getString(2);
-                    songObject.songTitle = songTitle;
-
-                    String songPath = mCursor.getString(3);
-                    songObject.songPath = songPath;
-
-                    String songDuration = mCursor.getString(4);
-                    songObject.songDuration = songDuration;
 
                     songObjectList.add(songObject);
 
@@ -348,6 +416,10 @@ public class MainActivity extends AppCompatActivity {
             // Close cursor
             mCursor.close();
 
+            for(int i=0; i < songObjectList.size()-1;i++){
+                Log.v("TAG song title ",String.valueOf(songObjectList.get(i).songTitle));
+                Log.v("TAG song album URI ",String.valueOf(songObjectList.get(i).albumArtURI));
+            }
         }
     }
 

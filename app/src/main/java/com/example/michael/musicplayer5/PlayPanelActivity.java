@@ -2,42 +2,70 @@ package com.example.michael.musicplayer5;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.ToggleButton;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayPanelActivity extends AppCompatActivity {
+
+    static MyPageAdapterMain playPager;
+    static ArrayList<SongObject> songObjectList = MainActivity.songObjectList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_panel);
 
+        ViewPager playPager = (ViewPager) findViewById(R.id.playPager);
+        playPager.setAdapter(new MyPagerAdapterPlay(this));
+
         //if the current current song album art uri != null
         //then set as background in some fashion
+
+        /**
         if(StaticMediaPlayer.currentSongObect != null && StaticMediaPlayer.currentSongObect.albumArtURI != null){
             //set album art as background in some fashion
-            RelativeLayout rl = (RelativeLayout) this.findViewById(R.id.activity_play_panel);
+            ImageView rl = (ImageView) this.findViewById(R.id.slidingView);
             Bitmap bm1 = BitmapFactory.decodeFile(StaticMediaPlayer.currentSongObect.albumArtURI);
             //blur the bitmap by shrinking it first
             //Bitmap.createScaledBitmap(Bitmap src, int dstWidth, int dstHeight, boolean filter)
             Bitmap bm2 = Bitmap.createScaledBitmap(bm1, 5, 5, true);
             rl.setBackgroundDrawable(new BitmapDrawable(bm2));
 
-            TextView playPanelTitleView = (TextView) findViewById(R.id.playPanelTitleView);
-            playPanelTitleView.setText(StaticMediaPlayer.currentSongObect.songTitle);
+            //TextView playPanelTitleView = (TextView) findViewById(R.id.playPanelTitleView);
+            //playPanelTitleView.setText(StaticMediaPlayer.currentSongObect.songTitle);
 
-            ImageView playPanelAlbumView = (ImageView) findViewById(R.id.playPanelAlbumView);
-            playPanelAlbumView.setImageBitmap(bm1);
-        }
+            //ImageView playPanelAlbumView = (ImageView) findViewById(R.id.playPanelAlbumView);
+            //playPanelAlbumView.setImageBitmap(bm1);
 
+
+        }**/
+
+
+        float elevation = 2;
+        float density = getResources().getDisplayMetrics().density;
+
+
+        View v = findViewById(R.id.shadowView);
+        v.setBackgroundDrawable(new RoundRectDrawableWithShadow(
+                getResources(), Color.BLACK, 0,
+                elevation * density, ((elevation + 1) * density) + 1
+        ));
 
         //TransformBackground(bm);
 
@@ -54,11 +82,41 @@ public class PlayPanelActivity extends AppCompatActivity {
         //mImg = (ImageView) findViewById(R.id.(your xml img id));
         //mImg.setImageBitmap(img);
 
+        //StaticMediaPlayer.setSongCompletionListener();
+
+        ToggleButton mplayButton = (ToggleButton) findViewById(R.id.playbutton);
+        Button mskipForwardsButton = (Button) findViewById(R.id.skipforwards);
+        Button mskipBackwardsButton = (Button) findViewById(R.id.skipback);
+        //ToggleButton mshuffleButton;
+        //ToggleButton mloopButton;
+
+        StaticMediaPlayer_OLD.SetButtonsPlayPanel(mplayButton, mskipForwardsButton, mskipBackwardsButton);
+
+        //StaticMediaPlayer.setLoopButtonListener();
+        //StaticMediaPlayer.setShuffleButtonListener();
+        StaticMediaPlayer_OLD.setPlayButtonListener();
+        StaticMediaPlayer_OLD.setSkipForwardsListener();
+        StaticMediaPlayer_OLD.setSkipBackwardsListener();
+
+
+    }
+
+    private List<Fragment> getFragments() {
+
+        // An empty array list
+        List<Fragment> fList = new ArrayList<Fragment>();
+
+        // Initialize and add fragment objects to the array list
+
+        fList.add(MyFragmentTracks.newInstance(songObjectList));
+
+        // Return the fragment object array list for adaption to the pager view
+        return fList;
     }
 
     public void TransformBackground(Bitmap bitMap){
 
-        Bitmap bm = BitmapFactory.decodeFile(StaticMediaPlayer.currentSongObect.albumArtURI);
+        Bitmap bm = BitmapFactory.decodeFile(StaticMediaPlayer_OLD.currentSongObect.albumArtURI);
         ResizeBitMap resizer = new ResizeBitMap(this);
         bitMap = resizer.resize(bm);
 

@@ -1,148 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:layout="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/activity_play_panel"
-    >
+    android:id="@+id/activity_play_panel">
 
-    <ImageView
-        android:id="@+id/slidingView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <RelativeLayout
-        android:layout_width="wrap_content"
+    <include layout="@layout/activity_play_panel_pager"
         android:layout_height="wrap_content"
+        android:layout_width="wrap_content"/>
+
+    <include layout="@layout/activity_play_panel_track_info"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_alignParentTop="true"/>
+
+    <include layout="@layout/shadow_view"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_above="@+id/activity_play_panel_play_controls"/>
+
+    <include layout="@layout/activity_play_panel_play_controls"
+        android:id="@id/activity_play_panel_play_controls"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"/>
+
+    <!-- OLD LAYOUT
+    <include layout="@layout/activity_play_panel_toolbar"
+        android:id="@+id/activity_play_panel_toolbar"/>
+
+    <FrameLayout
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/activity_play_panel_toolbar"
+        android:layout_above="@+id/activity_play_panel_track_info">
+
+        <include layout="@layout/activity_play_panel_pager"/>
+
+    </FrameLayout>
+
+    <include layout="@layout/shadow_view"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_above="@id/activity_play_panel_track_info"/>
+
+    <include layout="@layout/activity_play_panel_track_info"
+        android:id="@id/activity_play_panel_track_info"
+        android:layout_height="100dp"
+        android:layout_width="match_parent"
+        android:layout_above="@+id/activity_play_panel_play_controls"/>
+
+    <include layout="@layout/activity_play_panel_button_like"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_above="@id/activity_play_panel_track_info"
         android:layout_alignParentRight="true"
-        android:layout_margin="10dp">
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="-30dp"/>
 
-        <ImageView
-            android:id="@+id/playPanelDotsVer"
-            android:background="@drawable/dotsvert"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:padding="10dp"/>
-
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/playPanelTop"
-        android:layout_width="match_parent"
+    <include layout="@layout/activity_play_panel_play_controls"
+        android:id="@id/activity_play_panel_play_controls"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentTop="true"
-        android:gravity="center">
-
-        <TextView
-            android:id="@+id/playPanelTitleView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TEST TITLE"
-            android:textColor="#ffffff"
-            android:layout_margin="20dp"
-            android:textSize="30dp"
-            android:padding="5dp"
-            android:singleLine="true"
-            android:background="#50000000"/>
-
-        <!-- Need to set width and height here programatically to adjust for difference screen sizes-->
-
-        <ImageView
-            android:id="@+id/playPanelAlbumView"
-            android:layout_width="350dp"
-            android:layout_height="350dp"
-            android:background="#50000000"
-            android:padding="10dp"/>
-
-        <TextView
-            android:id="@+id/playPanelAlbum"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="test album"
-            android:textColor="#ffffff"
-            android:textSize="25dp"
-            android:background="#50000000"
-            android:layout_marginTop="20dp"/>
-
-        <TextView
-            android:id="@+id/playPanelArtist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="test artist"
-            android:textSize="20dp"
-            android:textColor="#ffffff"
-            android:background="#50000000"
-            android:layout_marginTop="10dp"/>
-
-    </LinearLayout>
-
-    <RelativeLayout
         android:layout_width="match_parent"
+        android:layout_above="@+id/activity_play_panel_seek_bar"/>
+
+    <include layout="@layout/activity_play_panel_seek_bar"
+        android:id="@id/activity_play_panel_seek_bar"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/playPanelBottom">
-
-        <ImageView
-            android:id="@+id/eq"
-            android:background="@drawable/equalizer"
-            android:layout_alignParentLeft="true"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp" />
-
-        <ImageView
-            android:id="@+id/playPanelStar"
-            android:background="@drawable/staron"
-            android:layout_alignParentRight="true"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"/>
-
-    </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/playPanelBottom"
-        android:background="#50000000"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentBottom="true"
-        android:gravity="center">
-
-        <ImageView
-            android:id="@+id/playPanelShuffle"
-            android:background="@drawable/shuffleoff"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp" />
-
-        <ImageView
-            android:id="@+id/playPanelSkipBack"
-            android:background="@drawable/skipback"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"/>
-
-        <ImageView
-            android:id="@+id/playPanelPlay"
-            android:background="@drawable/playbutton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"/>
-
-        <ImageView
-            android:id="@+id/playPanelSkipForwards"
-            android:background="@drawable/skipforwards"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"/>
-
-        <ImageView
-            android:id="@+id/playPanelLoopMode"
-            android:background="@drawable/looplistoff"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="10dp"/>
-
-    </LinearLayout>
+        android:layout_alignParentBottom="true"/>
+        -->
 
 </RelativeLayout>

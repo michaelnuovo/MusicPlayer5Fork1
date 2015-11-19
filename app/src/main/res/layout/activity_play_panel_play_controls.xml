@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+
+
+<!--
+    <include layout="@layout/activity_play_panel_button_skipbackwards"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content" />
+
+    <include layout="@layout/activity_play_panel_button_rewind"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content" />
+
+    <include layout="@layout/activity_play_panel_button_play"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content" />
+
+
+    <include layout="@layout/activity_play_panel_button_fastforwards"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content" />
+
+    <include layout="@layout/activity_play_panel_button_skipforwards"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content" />
+        -->
+
+    <!--
+        <ToggleButton
+            android:id="@+id/playPanelShuffle"
+            android:background="@drawable/shuffleoff"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp" />-->
+
+        <Button
+            android:id="@+id/skipback"
+            android:background="@drawable/skipback"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"/>
+
+        <ToggleButton
+            android:id="@+id/playbutton"
+            android:background="@drawable/playbutton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"/>
+
+        <Button
+            android:id="@+id/skipforwards"
+            android:background="@drawable/skipforwards"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"/>
+
+    <!--
+        <ImageView
+            android:id="@+id/playPanelLoopMode"
+            android:background="@drawable/looplistoff"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"/>-->
+
+
+
+</LinearLayout>

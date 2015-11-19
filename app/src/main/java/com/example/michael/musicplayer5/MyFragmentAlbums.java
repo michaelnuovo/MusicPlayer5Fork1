@@ -40,7 +40,7 @@ public class MyFragmentAlbums extends Fragment {
         MyGridViewAdapter gridAdapter = new MyGridViewAdapter(getActivity(), R.layout.grid_view_item, albumObjectList);
         gridView.setAdapter(gridAdapter);
 
-        Log.v("TAG: Album Fragment","");
+
 
         return rootView;
     }

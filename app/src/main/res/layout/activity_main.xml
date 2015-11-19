@@ -5,6 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        />
+
     <include layout="@layout/activity_main_header"
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -18,7 +23,7 @@
         android:layout_below="@id/header"
         android:layout_above="@+id/footer" />
 
-
+<!--
     <include layout="@layout/shadow_view"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
@@ -26,5 +31,6 @@
 
 
     <include layout="@layout/footer_wrapper"/>
+    -->
 
 </RelativeLayout>

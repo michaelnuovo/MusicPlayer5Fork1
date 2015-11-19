@@ -3,7 +3,6 @@ package com.example.michael.musicplayer5;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +49,7 @@ public class MyFragmentTracks extends Fragment {
         MyListAdapterTracks adapter = new MyListAdapterTracks(getActivity(), R.layout.list_view_item, songList);
         listView.setAdapter(adapter);
 
-        Log.v("TAG", "Tracks Fragment");
+
 
         /** Change Y direction of Drop Shadow On Play Controls Strip
         float elevation = 200;
@@ -77,13 +76,13 @@ public class MyFragmentTracks extends Fragment {
          ********/
 
         //Pass play button to static media player
-        StaticMediaPlayer.SetButtonsMainActivity(
+        StaticMediaPlayer_OLD.SetButtonsMainActivity(
                 (ToggleButton) rootView.findViewById(R.id.playButton),
                 songList
         );
 
         //Set play button listener
-        StaticMediaPlayer.setPlayButtonListener();
+        StaticMediaPlayer_OLD.setPlayButtonListener();
 
         //Set play panel title and artist
         currentTitleView = (TextView) rootView.findViewById(R.id.currentTitle);
@@ -130,6 +129,7 @@ public class MyFragmentTracks extends Fragment {
     }
 
     private void Listeners(){
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
@@ -142,46 +142,46 @@ public class MyFragmentTracks extends Fragment {
                 // arg2 is the position of the view which corresponds to a list array index
                 // .get() method on this index will return a song object
 
-                if (StaticMediaPlayer.playButton.isChecked() == false) { // If set to play
+                if (StaticMediaPlayer_OLD.playButton.isChecked() == false) { // If set to play
 
-                    StaticMediaPlayer.playButton.setChecked(true); // set to pause
+                    StaticMediaPlayer_OLD.playButton.setChecked(true); // set to pause
                 }
 
                 SongObject songObject = songList.get(arg2);
-                StaticMediaPlayer.TryToPlaySong(songObject);
-                if (StaticMediaPlayer.noSongHasBeenPlayedYet == true) {
-                    StaticMediaPlayer.noSongHasBeenPlayedYet = false;
+                StaticMediaPlayer_OLD.TryToPlaySong(songObject);
+                if (StaticMediaPlayer_OLD.noSongHasBeenPlayedYet == true) {
+                    StaticMediaPlayer_OLD.noSongHasBeenPlayedYet = false;
                 }
 
                 // If list view items is clicked after user has clicked back tracked a number of times
                 // than that many items should be deleted from the play history list
                 // since a new play list will be branched from that point
 
-                if (StaticMediaPlayer.clickedSkipBackWardsButtonHowManyTimes > 0) {
+                if (StaticMediaPlayer_OLD.clickedSkipBackWardsButtonHowManyTimes > 0) {
 
                     int i;
                     int j = 0;
 
-                    for (i = StaticMediaPlayer.clickedSkipBackWardsButtonHowManyTimes; i > 0; i--) {
+                    for (i = StaticMediaPlayer_OLD.clickedSkipBackWardsButtonHowManyTimes; i > 0; i--) {
 
-                        StaticMediaPlayer.playHistory.remove(StaticMediaPlayer.playHistory.size() - 1); // Remove last element in the play history
+                        StaticMediaPlayer_OLD.playHistory.remove(StaticMediaPlayer_OLD.playHistory.size() - 1); // Remove last element in the play history
                         j += 1;
                     }
 
-                    StaticMediaPlayer.clickedSkipBackWardsButtonHowManyTimes = StaticMediaPlayer.clickedSkipBackWardsButtonHowManyTimes - j;
+                    StaticMediaPlayer_OLD.clickedSkipBackWardsButtonHowManyTimes = StaticMediaPlayer_OLD.clickedSkipBackWardsButtonHowManyTimes - j;
                 }
 
-                if (StaticMediaPlayer.playHistory.size() >= 1) {
+                if (StaticMediaPlayer_OLD.playHistory.size() >= 1) {
                     // Add the clicked song to the play list
-                    if (songList.get(arg2) != songList.get(StaticMediaPlayer.playHistory.get(StaticMediaPlayer.playHistory.size() - 1))) { // <---
-                        StaticMediaPlayer.playHistory.add(arg2);
+                    if (songList.get(arg2) != songList.get(StaticMediaPlayer_OLD.playHistory.get(StaticMediaPlayer_OLD.playHistory.size() - 1))) { // <---
+                        StaticMediaPlayer_OLD.playHistory.add(arg2);
 
                     } else {
                         // do nothing
                     }
                 } else {
 
-                    StaticMediaPlayer.playHistory.add(arg2);
+                    StaticMediaPlayer_OLD.playHistory.add(arg2);
                 }
             }
         });
