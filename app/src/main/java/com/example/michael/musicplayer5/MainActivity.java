@@ -15,11 +15,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     static TextView currentTitleView;
     static TextView currentArtistView;
 
+
+
     // TEST TEST
 
     /*
@@ -54,89 +55,42 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /**
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });**/
-
-
-
+        /** Make song object list, album object list, and artist object list **/
         songObjectList = new ArrayList<>();
         scanMedia();
         Cursor songListCursor = GetSongListCursor();
         MakeLists(songListCursor);
-        StaticMediaPlayer.setSongObjectList(songObjectList);
 
+        /** Pass song object list to static music player **/
+        StaticMusicPlayer.setSongObjectList(songObjectList);
+
+        /** Set adapter for main activity **/
         fragments = getFragments();
         pageAdapter = new MyPageAdapterMain(getSupportFragmentManager(), fragments);
-
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         //viewPager.setPageTransformer(true, new ZoomOutPageTransformer());
         viewPager.setPageTransformer(true, new DepthPageTransformer());
         viewPager.setAdapter(pageAdapter);
         viewPager.setCurrentItem(3);
 
+        /** Set tab strip for main activity**/
         tab = (TabLayout) findViewById(R.id.tabs);
         tab.setupWithViewPager(viewPager);
 
-        /** Buttons
-        playButton = (ToggleButton) findViewById(R.id.playButton);
-        skipForwardsButton = (ToggleButton) findViewById(R.id.skipForwards);
-        skipBackwardsButton = (ToggleButton) findViewById(R.id.skipBackwards);
-        shuffleButton = (ToggleButton) findViewById(R.id.shuffle);
-        loopButton = (ToggleButton) findViewById(R.id.loopList); **/
+        /** Set play button and play button listener **/
+        StaticMusicPlayer.setPlayButton((ToggleButton) findViewById(R.id.main_playButton));
+        StaticMusicPlayer.setPlayButtonListener();
 
-        /*
-        StaticMediaPlayer.SetButtonsMainActivity(
-                (ToggleButton) findViewById(R.id.playButton),
-                (ToggleButton) findViewById(R.id.skipForwards),
-                (ToggleButton) findViewById(R.id.skipBackwards),
-                (ToggleButton) findViewById(R.id.shuffle),
-                (ToggleButton) findViewById(R.id.loopList),
-                (TextView) findViewById(R.id.currentTitle),
-                (TextView) findViewById(R.id.currentArtist),
-                songObjectList
-        );*/
-
-        /*******
-
-         STATIC MEDIA PLAYER CLASS LISTENERS
-
-         StaticMediaPlayer.setSongCompletionListener()
-         StaticMediaPlayer.setLoopButtonListener();
-         StaticMediaPlayer.setShuffleButtonListener();
-         StaticMediaPlayer.setPlayButtonListener();
-         StaticMediaPlayer.setSkipForwardsListener();
-         StaticMediaPlayer.setSkipBackwardsListener();
-
-         ********/
-
-        //Pass play button to static media player
-        StaticMediaPlayer_OLD.SetButtonsMainActivity(
-                (ToggleButton) findViewById(R.id.playButton),
-                songObjectList
-        );
-
-        //Set play button listener
-        StaticMediaPlayer_OLD.setPlayButtonListener();
-
-        //Set play panel title and artist
-        currentTitleView = (TextView) findViewById(R.id.currentTitle);
-        currentArtistView = (TextView) findViewById(R.id.currentArtist);
-
-        //currentTitleView.setText(songObject.title);
-        //currentArtistView.setText(songObject.artist);
-
-        TitlePanelClickListener();
+        /** Set shuffle button and shuffle button listener **/
+        StaticShuffleButton.setShuffledList(songObjectList);
+        StaticShuffleButton.setButton((Button) findViewById(R.id.shuffleButton));
+        StaticShuffleButton.setButtonListener();
 
 
 
-        /**
+        mainFooterListener();
+
+        /** Draw Footer Shadow
         float elevation = 2;
         float density = getResources().getDisplayMetrics().density;
 
@@ -145,10 +99,6 @@ public class MainActivity extends AppCompatActivity {
                 getResources(), Color.BLACK, 0,
                 elevation * density, ((elevation + 1) * density) + 1
         ));**/
-
-        /**
-        currentTitleView = (TextView) findViewById(R.id.currentTitle);
-        currentArtistView = (TextView) findViewById(R.id.currentArtist);**/
 
     }
 
@@ -174,12 +124,12 @@ public class MainActivity extends AppCompatActivity {
         return fList;
     }
 
-    public void TitlePanelClickListener(){
+    public void mainFooterListener(){
 
-        LinearLayout TitlePanel = (LinearLayout) findViewById(R.id.activity_main_track_info);
+        LinearLayout mainFooter = (LinearLayout) findViewById(R.id.activity_main_footer);
 
         /** Title Listener **/
-        TitlePanel.setOnClickListener(new View.OnClickListener() {
+        mainFooter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -190,6 +140,14 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.startActivity(intent);
                 //overridePendingTransition(R.anim.slide_up, R.anim.dont_move);
 
+                // So here, if a a song is already playing, then we want to open
+                // the new activity but without restarting the song.
+                // If a song is not playing, then we want to play the first song on the list.
+                if(StaticMusicPlayer.mediaPlayer.isPlaying()){
+                    StaticMusicPlayer.tryToPlaySong(songObjectList.get(0));
+                } else {
+                    // do nothing
+                }
             }
         });
     }

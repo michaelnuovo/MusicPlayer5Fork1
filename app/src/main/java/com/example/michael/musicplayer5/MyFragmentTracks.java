@@ -139,7 +139,7 @@ public class MyFragmentTracks extends Fragment {
                 Intent intent = new Intent(getActivity(), PlayPanelActivity.class);
                 startActivity(intent);
 
-                StaticMediaPlayer.tryToPlaySong(songList.get(arg2)); // arg2 is a sonObject
+                StaticMusicPlayer.tryToPlaySong(songList.get(arg2)); // arg2 is a sonObject
 
                 /*
                 // arg2 is the position of the view which corresponds to a list array index

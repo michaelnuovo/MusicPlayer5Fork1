@@ -5,24 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        />
-
-    <include layout="@layout/activity_main_header"
-        android:id="@+id/header"
-        android:layout_width="match_parent"
-        android:layout_height="125dp"
-        android:layout_above="@layout/tab_strip_and_pager"
-        android:background="#ffffff" />
-
     <include layout="@layout/tab_strip_and_pager"
         android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:layout_below="@id/header"
-        android:layout_above="@+id/footer" />
+        android:layout_width="match_parent"/>
 
+
+    <include layout="@layout/activity_main_footer"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"/>
 <!--
     <include layout="@layout/shadow_view"
         android:layout_height="wrap_content"

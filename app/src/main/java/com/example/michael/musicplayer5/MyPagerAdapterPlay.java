@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,19 +38,21 @@ public class MyPagerAdapterPlay extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup collection, int position) {
 
+        Log.v("TAG position is ",String.valueOf(position));
         songObject = songObjectsList.get(position);
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
         ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.play_pager_layout, collection, false);
         collection.addView(layout);
 
+        TextView tx = (TextView) layout.findViewById(R.id.pagertest);
+        tx.setText(String.valueOf(position));
+
         ImageView iv = (ImageView) layout.findViewById(R.id.slidingView);
         //Drawable drbl = Drawable.createFromPath(songObject.albumArtURI);
 
         if(songObject.albumArtURI != null){
             Bitmap bm = BitmapFactory.decodeFile(songObject.albumArtURI);
-            Log.v("TAG uri value",String.valueOf(songObject.albumArtURI));
-            Log.v("TAG bm balue",String.valueOf(bm));
             //bm = Bitmap.createScaledBitmap(bm, 2, 2, false);
             iv.setImageBitmap(bm);
         }
@@ -65,6 +68,7 @@ public class MyPagerAdapterPlay extends PagerAdapter {
         //}
 
         return layout;
+
     }
 
     @Override
