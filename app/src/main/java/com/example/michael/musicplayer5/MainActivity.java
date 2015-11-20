@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         scanMedia();
         Cursor songListCursor = GetSongListCursor();
         MakeLists(songListCursor);
+        StaticMediaPlayer.setSongObjectList(songObjectList);
 
         fragments = getFragments();
         pageAdapter = new MyPageAdapterMain(getSupportFragmentManager(), fragments);

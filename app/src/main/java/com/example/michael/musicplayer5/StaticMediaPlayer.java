@@ -20,20 +20,22 @@ public final class StaticMediaPlayer {
 
     /** Fields **/
 
-    private static MediaPlayer mediaPlayer;
+    private static MediaPlayer mediaPlayer = new MediaPlayer();
 
-    private static ToggleButton playButton;
-    private static ToggleButton shuffleButton;
-    private static ToggleButton loopButton;
-    private static Button skipRightButton;
-    private static Button skipLeftButton;
+    private static ToggleButton playButton = null;
+    private static ToggleButton shuffleButton = null;
+    private static ToggleButton loopButton = null;
+    private static Button skipRightButton = null;
+    private static Button skipLeftButton = null;
 
-    private static ArrayList<SongObject> songObjectList;
-    private static ArrayList<SongObject> shuffledList;
+    private static ArrayList<SongObject> songObjectList = null;
+    private static ArrayList<SongObject> shuffledList = null;
 
     static Boolean shuffleOn = false;
     static Boolean loopModeOn = false; // Right now loop mode on means replay the song current song
     static Boolean pressedPlay = false;
+
+    static int currentIndex; // Current index of song being played
 
     /** Empty Constructor **/
 
@@ -43,6 +45,11 @@ public final class StaticMediaPlayer {
     }
 
     /** Setters **/
+
+    public static void setSongObjectList(ArrayList<SongObject> list){
+
+        songObjectList = list;
+    }
 
     public static void setPlayButton(ToggleButton btn){
 
@@ -71,301 +78,53 @@ public final class StaticMediaPlayer {
 
     /** Listeners**/
 
-    //public void listen(){
-
-        public static void setSongCompletionListener(){
-
-            // If a song finishes playing
-            mediaPlayer.setOnCompletionListener(new android.media.MediaPlayer.OnCompletionListener() {
-
-                public void onCompletion(android.media.MediaPlayer mp) {
-
-                    if (loopModeOn == true) {
-
-                        mediaPlayer.start(); // Replay the song from the beginning
-                    } else {
-
-                        PlayAndIndexASong();
-                    }
-                }
-            });
-
+    public static void tryToPlaySong(SongObject songObject) {
+        try {
+            playSong(songObject);
         }
-
-        public static void setLoopButtonListener(){
-
-            loopButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.v("TAG loop button", "clicked");
-                    if (loopModeOn == false) {
-                        // if media player loops mode is off --> turn on
-                        //mediaPlayer.setLooping(true); // this mode doesn't work on certain versions of android http://stackoverflow.com/questions/28566268/mediaplayer-wont-loop-setlooping-doesnt-work
-                        loopModeOn = true;
-                        Log.v("TAG loop mode ", "on");
-                    } else {
-                        // turn loop mode off
-                        //mediaPlayer.setLooping(false);
-                        loopModeOn = false;
-                        Log.v("TAG loop mode ", "off");
-                    }
-                }
-            });
+        catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
-
-        public static void setShuffleButtonListener(){
-
-            shuffleButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (shuffleOn == false) {
-                        shuffleOn = true;
-                        shuffleList();
-                    } else {
-                        shuffleOn = false;
-                    }
-                }
-            });
+        catch (IllegalStateException e) {
+            e.printStackTrace();
         }
-
-        public static void setPlayButtonListener(){
-
-            /** Play Button Listener **/
-            playButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    Log.v("TAG: ","play button clicked");
-
-                    if(noSongHasBeenPlayedYet == true) {
-
-                        PlayAndIndexASong();
-
-                    } else {
-
-                        if(pressedPlay == true){
-                            pressedPlay = false;
-                            mediaPlayer.start();
-
-                        }else{
-                            Log.v("TAG: ","pause");
-                            pressedPlay = true;
-                            mediaPlayer.pause();
-                        }
-                    }
-                }
-            });
+        catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
-        public static void setSkipForwardsListener() {
+    private static void playSong(SongObject songObject) throws IllegalArgumentException, IllegalStateException, IOException {
 
-            /** Skip Forwards Listener **/
-            skipForwardsButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        mediaPlayer.reset();
+        mediaPlayer.setDataSource(songObject.songPath);
+        mediaPlayer.prepare();
+        mediaPlayer.start();
 
-                    Log.v("TAG: ","forwards button clicked");
+        currentIndex = songObjectList.indexOf(songObject);
+    }
 
-                    if(playButton.isChecked() == false){
-                        playButton.setChecked(true);
-                    }
+    public static void setSkipForwardsListener() {
 
-                    if(noSongHasBeenPlayedYet == true){
-                        PlayAndIndexASong();
-                        noSongHasBeenPlayedYet = false;
-                    } else {
-                        PlayAndIndexASong();
-                    }
-                }
-            });
-        }
+        /** Skip Forwards Listener **/
+        skipRightButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        public static void setSkipBackwardsListener() {
+                Log.v("TAG: ", "forwards button clicked");
 
-            /** Skip backwards Listener **/
-            skipBackwardsButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+                // Play the next song in the list if shuffle is off
+                // but we need to also make sure there is no out of bounds error
+                // if the next index would be out of bounds, then start at the first index, index 0
+                // if shuffle is on then we need to shuffle the list
+                if (currentIndex == songObjectList.size() - 1) {
 
-                    Log.v("TAG: ","back button clicked");
-
-                    if (playHistory.size() == 0) { // If there are no songs in the play history
-
-                        // Do nothing
-
-                    } else {
-
-                        // If current position is greater 5 seconds, restart
-                        if (mediaPlayer.getCurrentPosition() > 10000) {
-
-                            if (playHistory.size() > 1) {
-
-                                SongObject songObject = songObjectList.get(playHistory.get(playHistory.size() - 1 - clickedSkipBackWardsButtonHowManyTimes));
-                                TryToPlaySong(songObject); // Get the last song
-                            } else {
-                                Log.v("Replay", "");
-                                SongObject songObject = songObjectList.get(playHistory.get(0));
-                                TryToPlaySong(songObject); // Get first song if there is only one song
-                                Log.v("Replay", "");
-                            }
-
-                        } else {
-
-                            // Avoid out of bounds error with play history
-                            if (playHistory.size() - 1 - clickedSkipBackWardsButtonHowManyTimes > 0) {
-
-                                Log.v("AAA ,", String.valueOf(playHistory.size() - 1));
-                                Log.v("BBB ", String.valueOf(clickedSkipBackWardsButtonHowManyTimes));
-
-                                clickedSkipBackWardsButtonHowManyTimes += 1;
-
-                                int songIndex = playHistory.size() - 1;
-                                songIndex = songIndex - clickedSkipBackWardsButtonHowManyTimes;
-
-                                SongObject songObject = songObjectList.get(playHistory.get(songIndex));
-                                TryToPlaySong(songObject);
-                            } else {
-                                // do nothing
-                                Log.v("CCC ", "");
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        public static void PlayAndIndexASong() {
-
-            if(clickedSkipBackWardsButtonHowManyTimes > 0){
-
-                Log.v("Play history size: ",String.valueOf(playHistory.size()));
-                Log.v("Clicked back button: ",String.valueOf(clickedSkipBackWardsButtonHowManyTimes));
-                Log.v("Difference: ", String.valueOf(playHistory.size() - clickedSkipBackWardsButtonHowManyTimes));
-
-                int songIndex = playHistory.size() - 1 - clickedSkipBackWardsButtonHowManyTimes + 1;
-                SongObject songObject = songObjectList.get(playHistory.get(songIndex));
-                TryToPlaySong(songObject);
-                clickedSkipBackWardsButtonHowManyTimes -=1;
-
-            }else{
-
-                if (shuffleOn == true) {
-
-                    GetRandomSongIndex();
-
+                    tryToPlaySong(songObjectList.get(0)); // play the zero index song
                 } else {
-
-                    GetNextSongIndex();
-                }
-            }
-        }
-
-        public static void GetNextSongIndex(){
-
-            if (noSongHasBeenPlayedYet == true) {
-
-                SongObject songObject = songObjectList.get(0);
-                TryToPlaySong(songObject);
-                noSongHasBeenPlayedYet = false;
-
-                playHistory.add(0);
-
-
-            } else {
-                Log.v("HELLO WORLD", "HELLO WORLD");
-                // To avoid out of bounds error
-                if(playHistory.get(playHistory.size()-1) // returns an index
-                        == songObjectList.size()-1) // the last index
-                { // <--
-
-                    Log.v("TAG", "HERE");
-
-                    SongObject songObject = songObjectList.get(0);
-                    TryToPlaySong(songObject);
-
-
-                    playHistory.add(0);
-
-                } else {
-
-                    Log.v("TAG","HERE AGAIN");
-
-                    int songIndex = playHistory.get(playHistory.size() - 1); // get the last song index in the play history
-                    songIndex = songIndex + 1; // add one to it
-
-                    SongObject songObject = songObjectList.get(songIndex);
-                    TryToPlaySong(songObject); // play it
-
-                    playHistory.add(songIndex); // add it to the play history
-
-                }
-            }
-        }
-
-        public static void GetRandomSongIndex() {
-
-            max = songObjectList.size() - 1;
-            min = 0;
-
-            if(noSongHasBeenPlayedYet == true){
-
-                int songIndex = randomUtil.nextInt((max - min) + 1) + min;
-
-                SongObject songObject = songObjectList.get(songIndex);
-                TryToPlaySong(songObject);
-                noSongHasBeenPlayedYet = false;
-
-                playHistory.add(songIndex);
-
-            } else {
-
-                int songIndex = randomUtil.nextInt((max - min) + 1) + min;
-
-                // Do not a play a song in the song list that's already in the play history
-                // untill that condition returns false
-
-                while(songIndex == playHistory.get(playHistory.size()-1)){
-                    Log.v("RANDOM BBB","");
-                    songIndex = randomUtil.nextInt((max - min) + 1) + min;
+                    tryToPlaySong(songObjectList.get(currentIndex+ 1)); // play the next song
                 }
 
-                SongObject songObject = songObjectList.get(songIndex);
-                TryToPlaySong(songObject);
-                playHistory.add(songIndex);
-
             }
-
-        }
-
-        public static void TryToPlaySong(SongObject songObject) {
-            try {PlaySong(songObject);}
-            catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            }
-            catch (IllegalStateException e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        private static void PlaySong(SongObject songObject) throws IllegalArgumentException, IllegalStateException, IOException {
-            //String extStorageDirectory = Environment.getExternalStorageDirectory().toString();
-            mediaPlayer.reset();
-            mediaPlayer.setDataSource(songObject.songPath); // songObject.data is a path
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-
-            //currentTitleView.setText(songObject.title);
-            //currentArtistView.setText(songObject.artist);
-
-            currentTitle = songObject.songTitle;
-            currentArtist = songObject.artist;
-
-            currentSongObect = songObject;
-
-        }
-    //}
+        });
+    }
 }
 

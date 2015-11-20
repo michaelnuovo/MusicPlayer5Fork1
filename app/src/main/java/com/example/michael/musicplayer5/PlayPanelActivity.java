@@ -33,6 +33,7 @@ public class PlayPanelActivity extends AppCompatActivity {
 
         ViewPager playPager = (ViewPager) findViewById(R.id.playPager);
         playPager.setAdapter(new MyPagerAdapterPlay(this));
+        playPager.setCurrentItem(StaticMediaPlayer.currentIndex);
 
         //if the current current song album art uri != null
         //then set as background in some fashion
@@ -84,21 +85,18 @@ public class PlayPanelActivity extends AppCompatActivity {
 
         //StaticMediaPlayer.setSongCompletionListener();
 
+        /** old music play code
         ToggleButton mplayButton = (ToggleButton) findViewById(R.id.playbutton);
         Button mskipForwardsButton = (Button) findViewById(R.id.skipforwards);
         Button mskipBackwardsButton = (Button) findViewById(R.id.skipback);
-        //ToggleButton mshuffleButton;
-        //ToggleButton mloopButton;
-
         StaticMediaPlayer_OLD.SetButtonsPlayPanel(mplayButton, mskipForwardsButton, mskipBackwardsButton);
-
-        //StaticMediaPlayer.setLoopButtonListener();
-        //StaticMediaPlayer.setShuffleButtonListener();
         StaticMediaPlayer_OLD.setPlayButtonListener();
         StaticMediaPlayer_OLD.setSkipForwardsListener();
-        StaticMediaPlayer_OLD.setSkipBackwardsListener();
+        StaticMediaPlayer_OLD.setSkipBackwardsListener(); **/
 
-
+        /** new music player code **/
+        StaticMediaPlayer.skipRightButton((Button) findViewById(R.id.skipforwards)); // set static reference to this object
+        StaticMediaPlayer.setSkipForwardsListener();
     }
 
     private List<Fragment> getFragments() {
