@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +19,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-public class MyListAdapterTracks extends ArrayAdapter<SongObject> {
+public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
 
     Context context;
     int layoutResourceId;
@@ -59,10 +58,10 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject> {
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
 
-            convertView = inflater.inflate(R.layout.list_view_item, parent, false);
+            convertView = inflater.inflate(R.layout.item_list_view, parent, false);
             convertView.setTag(viewHolder);
 
-        // if an existing view is being reused
+            // if an existing view is being reused
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
             //viewHolder.albumArt = null;
@@ -92,8 +91,8 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject> {
 
         //new ImageLoader(viewHolder.albumArt).execute(songObject.albumArtURI);
 
-        Log.v("albumArtURI",String.valueOf(songObject.albumArtURI));
-        Log.v("artist",String.valueOf(songObject.artist));
+        //Log.v("albumArtURI",String.valueOf(songObject.albumArtURI));
+        //Log.v("artist",String.valueOf(songObject.artist));
 
 
         /** SET ALBUM ART TO LIST ITEMS USING PICASSO IMAGE LIBRARY **/
@@ -103,10 +102,10 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject> {
             File f = new File(songObject.albumArtURI);
 
             /** CODE WITHOUT CIRCULAR TRANSFORM
-            Picasso.with(viewHolder.albumArt.getContext())
-                    .load(f)
-                    .placeholder(R.drawable.grayalbumart)
-                    .into(viewHolder.albumArt);**/
+             Picasso.with(viewHolder.albumArt.getContext())
+             .load(f)
+             .placeholder(R.drawable.grayalbumart)
+             .into(viewHolder.albumArt);**/
 
             /** CODE WITH CIRCULAR TRANSFORM **/
             Picasso.with(viewHolder.albumArt.getContext())
@@ -117,10 +116,10 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject> {
         } else {
 
             /** CODE WITHOUT CIRCULAR TRANSFORM
-            Picasso.with(viewHolder.albumArt.getContext())
-                    .load(songObject.albumArtURI)
-                    .placeholder(R.drawable.grayalbumart)
-                    .into(viewHolder.albumArt);**/
+             Picasso.with(viewHolder.albumArt.getContext())
+             .load(songObject.albumArtURI)
+             .placeholder(R.drawable.grayalbumart)
+             .into(viewHolder.albumArt);**/
 
             /** CODE WITH CIRCULAR TRANSFORM **/
 

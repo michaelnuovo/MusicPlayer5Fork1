@@ -16,25 +16,27 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlayPanelActivity extends AppCompatActivity {
 
-    static ArrayList<SongObject> songObjectList = MainActivity.songObjectList;
-    static int position;
-    static ViewPager playPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_panel);
 
+        //ArrayList<SongObject> songObjectList = MainActivity.mainList;
+
+        ViewPager playPager;
+
         playPager = (ViewPager) findViewById(R.id.playPager);
         playPager.setAdapter(new MyPagerAdapterPlay(this));
-        position = StaticMusicPlayer.currentIndex;
-        playPager.setCurrentItem(position);
+
+        playPager.setCurrentItem(StaticMusicPlayer.currentIndex);
 
         //if the current current song album art uri != null
         //then set as background in some fashion
@@ -86,23 +88,18 @@ public class PlayPanelActivity extends AppCompatActivity {
 
         //StaticMediaPlayer.setSongCompletionListener();
 
-        /** old music play code
-        ToggleButton mplayButton = (ToggleButton) findViewById(R.id.playbutton);
-        Button mskipForwardsButton = (Button) findViewById(R.id.skipforwards);
-        Button mskipBackwardsButton = (Button) findViewById(R.id.skipback);
-        StaticMediaPlayer_OLD.SetButtonsPlayPanel(mplayButton, mskipForwardsButton, mskipBackwardsButton);
-        StaticMediaPlayer_OLD.setPlayButtonListener();
-        StaticMediaPlayer_OLD.setSkipForwardsListener();
-        StaticMediaPlayer_OLD.setSkipBackwardsListener(); **/
-
-        /** new music player code **/
+        /** Buttons **/
         StaticMusicPlayer.skipRightButton((Button) findViewById(R.id.skipforwards)); // set static reference to this object
         StaticMusicPlayer.setSkipForwardsListener();
         StaticMusicPlayer.skipLeftButton((Button) findViewById(R.id.skipback));
         StaticMusicPlayer.setSkipBackwardsListener();
+        StaticMusicPlayer.setPlayButton((ToggleButton) findViewById(R.id.playbutton));
+        StaticMusicPlayer.setPlayButtonListener();
+        StaticMusicPlayer.setViewPager(playPager);
+        StaticMusicPlayer.SetViewPagerListener();
     }
 
-    private List<Fragment> getFragments() {
+    private List<Fragment> getFragments(ArrayList<SongObject> songObjectList) {
 
         // An empty array list
         List<Fragment> fList = new ArrayList<Fragment>();

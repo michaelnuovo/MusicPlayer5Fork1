@@ -1,7 +1,6 @@
 package com.example.michael.musicplayer5;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +57,7 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
 
-            convertView = inflater.inflate(R.layout.grid_view_item, parent, false);
+            convertView = inflater.inflate(R.layout.item_grid_view, parent, false);
             convertView.setTag(viewHolder);
 
             // if an existing view is being reused
@@ -100,9 +99,9 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
 
             /** CODE WITHOUT CIRCULAR TRANSFORM
              Picasso.with(viewHolder.albumArt.getContext())
-             .load(f)
-             .placeholder(R.drawable.grayalbumart)
-             .into(viewHolder.albumArt);**/
+                 .load(f)
+                 .placeholder(R.drawable.grayalbumart).fit().centerCrop()
+                 .into(viewHolder.albumArt);**/
 
             /** CODE WITH CIRCULAR TRANSFORM **/
             Picasso.with(viewHolder.albumArt.getContext())
@@ -114,11 +113,11 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
 
             /** CODE WITHOUT CIRCULAR TRANSFORM
              Picasso.with(viewHolder.albumArt.getContext())
-             .load(songObject.albumArtURI)
-             .placeholder(R.drawable.grayalbumart)
-             .into(viewHolder.albumArt);**/
+                 .load(albumObject.albumArtURI)
+                 .placeholder(R.drawable.grayalbumart).fit().centerCrop()
+                     .into(viewHolder.albumArt);**/
 
-            /** CODE WITH CIRCULAR TRANSFORM **/
+            /** CODE WITH CIRCULAR TRANSFORM**/
 
             Picasso.with(viewHolder.albumArt.getContext())
                     .load(albumObject.albumArtURI)

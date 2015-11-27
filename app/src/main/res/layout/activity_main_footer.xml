@@ -2,25 +2,42 @@
 <LinearLayout
     android:id="@+id/activity_main_footer"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#ffffff">
+    android:background="#000000">
 
-    <ToggleButton
-        android:id="@+id/main_playButton"
-        android:background="@drawable/playbutton"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_margin="10dp"
-        android:layout_gravity="left"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent"/>
 
-    <ToggleButton
-        android:id="@+id/shuffleButton"
-        android:background="@drawable/shuffleoff"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_margin="10dp"
-        android:layout_gravity="right"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ToggleButton
+            android:id="@+id/main_playButton"
+            android:background="@drawable/selector_button_play"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:layout_gravity="left"
+            android:textOff=""
+            android:textOn=""/>
+
+        <ToggleButton
+            android:id="@+id/shuffleButton"
+            android:background="@drawable/shuffleoff"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:layout_gravity="right"
+            android:textOff=""
+            android:textOn=""/>
+
+
+    </LinearLayout>
 
 </LinearLayout>

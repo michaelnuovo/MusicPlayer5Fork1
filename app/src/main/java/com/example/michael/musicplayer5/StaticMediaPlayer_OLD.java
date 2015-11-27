@@ -35,7 +35,7 @@ public final class StaticMediaPlayer_OLD {
     static ToggleButton shuffleButton;
     static ToggleButton loopButton;
 
-    static ArrayList<com.example.michael.musicplayer5.SongObject> songObjectList = MainActivity.songObjectList;
+    static ArrayList<com.example.michael.musicplayer5.SongObject> songObjectList = MainActivity.mainList;
 
     private StaticMediaPlayer_OLD() {
 

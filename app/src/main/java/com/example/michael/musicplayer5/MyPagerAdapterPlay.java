@@ -25,7 +25,7 @@ import java.util.List;
 public class MyPagerAdapterPlay extends PagerAdapter {
 
     private Context mContext;
-    private ArrayList<SongObject> songObjectsList = MainActivity.songObjectList;
+    private ArrayList<SongObject> songObjectsList = StaticMusicPlayer.songObjectList;
     private SongObject songObject;
 
     public MyPagerAdapterPlay(Context context) {
@@ -38,7 +38,7 @@ public class MyPagerAdapterPlay extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup collection, int position) {
 
-        Log.v("TAG position is ",String.valueOf(position));
+
         songObject = songObjectsList.get(position);
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
@@ -51,6 +51,7 @@ public class MyPagerAdapterPlay extends PagerAdapter {
         ImageView iv = (ImageView) layout.findViewById(R.id.slidingView);
         //Drawable drbl = Drawable.createFromPath(songObject.albumArtURI);
 
+        /** Applies background to ViewPager **/
         if(songObject.albumArtURI != null){
             Bitmap bm = BitmapFactory.decodeFile(songObject.albumArtURI);
             //bm = Bitmap.createScaledBitmap(bm, 2, 2, false);
@@ -58,8 +59,6 @@ public class MyPagerAdapterPlay extends PagerAdapter {
         }
 
 
-        //Log.v("TAG uri path from panel",String.valueOf(songObject.albumArtURI));
-        //Log.v("TAG song title from panel",String.valueOf(songObject.songTitle));
         //int sdk = android.os.Build.VERSION.SDK_INT;
         //if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
         //    iv.setBackgroundDrawable(drbl);

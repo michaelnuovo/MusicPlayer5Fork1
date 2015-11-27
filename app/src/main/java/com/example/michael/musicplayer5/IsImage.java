@@ -17,6 +17,7 @@ public final class IsImage {
 
     static boolean test(File file){
 
+
         if (file == null || !file.exists()) {
             return false;
         }

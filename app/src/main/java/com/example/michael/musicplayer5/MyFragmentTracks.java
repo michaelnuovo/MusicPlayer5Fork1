@@ -42,11 +42,11 @@ public class MyFragmentTracks extends Fragment {
 
         songList = getArguments().getParcelableArrayList(EXTRA_MESSAGE);
 
-        View rootView = inflater.inflate(R.layout.my_fragment_layout_tracks, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_layout_tracks, container, false);
 
         listView = (ListView) rootView.findViewById(R.id.fragmentListView);
 
-        MyListAdapterTracks adapter = new MyListAdapterTracks(getActivity(), R.layout.list_view_item, songList);
+        MyListAdapterTracks adapter = new MyListAdapterTracks(getActivity(), R.layout.item_list_view, songList);
         listView.setAdapter(adapter);
 
 
@@ -136,10 +136,14 @@ public class MyFragmentTracks extends Fragment {
 
                 // Open the play panel activity from this fragment
 
+
+
+                StaticMusicPlayer.tryToPlaySong(songList.get(arg2)); // arg2 is a sonObject
+                StaticMusicPlayer.setList(songList);
+
                 Intent intent = new Intent(getActivity(), PlayPanelActivity.class);
                 startActivity(intent);
 
-                StaticMusicPlayer.tryToPlaySong(songList.get(arg2)); // arg2 is a sonObject
 
                 /*
                 // arg2 is the position of the view which corresponds to a list array index

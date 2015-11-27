@@ -1,6 +1,7 @@
 package com.example.michael.musicplayer5;
 
 import android.media.MediaPlayer;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -8,6 +9,7 @@ import android.widget.ToggleButton;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by michael on 11/19/15.
@@ -22,12 +24,12 @@ public final class StaticMusicPlayer {
     public static MediaPlayer mediaPlayer = new MediaPlayer();
 
     private static ToggleButton playButton = null;
-    private static ToggleButton shuffleButton = null;
+
     private static ToggleButton loopButton = null;
     private static Button skipForwardsButton = null;
     private static Button skipBackwardsButton = null;
 
-    private static ArrayList<SongObject> songObjectList = null;
+    static ArrayList<SongObject> songObjectList = null;
     public static ArrayList<SongObject> playList = new ArrayList<>();
 
     static boolean shuffleOn = false;
@@ -38,6 +40,11 @@ public final class StaticMusicPlayer {
 
     static int currentIndex = 0; // Current index of song being played (zero by default)
 
+    private static Button shuffleButton = null;
+    private static ArrayList<SongObject> shuffledList = null;
+
+    private static ViewPager viewPager;
+
     /** Empty Constructor **/
 
     private StaticMusicPlayer(){
@@ -47,7 +54,7 @@ public final class StaticMusicPlayer {
 
     /** Setters **/
 
-    public static void setSongObjectList(ArrayList<SongObject> list){
+    public static void setList(ArrayList<SongObject> list){
 
         songObjectList = list;
     }
@@ -77,6 +84,21 @@ public final class StaticMusicPlayer {
         skipBackwardsButton = btn;
     }
 
+    public static void setShuffleButton(Button btn){
+
+        shuffleButton = btn;
+    }
+
+    public static void setShuffleList(ArrayList<SongObject> arrayList){
+
+        shuffledList = arrayList;
+    }
+
+    public static void setViewPager(ViewPager vp){
+
+        viewPager = vp;
+    }
+
     /** Get song **/
 
     public static void tryToPlayNextSong(){
@@ -100,25 +122,31 @@ public final class StaticMusicPlayer {
 
     /** Listeners**/
 
-    public static void tryToPlaySong(SongObject songObject) {
+    public static void tryToPlaySong(final SongObject songObject) {
 
-        try {
-            playSong(songObject);
-        }
-        catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-        catch (IllegalStateException e) {
-            e.printStackTrace();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        noSongHasBeenPlayedYet = false;
+        currentIndex = songObjectList.indexOf(songObject);
+
+        new Thread() {
+            public void run() {
+                try {
+                    playSong(songObject);
+                }
+                catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+                catch (IllegalStateException e) {
+                    e.printStackTrace();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     private static void playSong(SongObject songObject) throws IllegalArgumentException, IllegalStateException, IOException {
 
-        Log.v("TAG @#$$%#$%$ ", String.valueOf(songObject.songTitle));
 
         mediaPlayer.reset();
         mediaPlayer.reset();
@@ -126,7 +154,7 @@ public final class StaticMusicPlayer {
         mediaPlayer.prepare();
         mediaPlayer.start();
 
-        noSongHasBeenPlayedYet = false;
+
 
     }
 
@@ -216,6 +244,8 @@ public final class StaticMusicPlayer {
             @Override
             public void onClick(View v) {
 
+                Log.v("TAG: ", "play button clicked");
+
                 // So if no song has been played yet, and the user clicks on the play
                 // button from the main activity, this means that we need to play the
                 // first song in the alphabetical song list, and since that song has already
@@ -226,11 +256,9 @@ public final class StaticMusicPlayer {
                 // remember that noSongHasBeenPlayedYet is set to false in .playSong()
                 // so no need to do it here.
 
-                tryToPlaySong(songObjectList.get(0));
-
-                /*
                 if(noSongHasBeenPlayedYet == true) {
 
+                    Log.v("TAG try to play :", String.valueOf(songObjectList.get(0)));
                     tryToPlaySong(songObjectList.get(0));
 
                 } else {
@@ -245,7 +273,55 @@ public final class StaticMusicPlayer {
                         pressedPlay = true;
                         mediaPlayer.pause();
                     }
-                }*/
+                }
+            }
+        });
+    }
+
+
+
+    public static void setShuffleButtonListener(){
+
+        shuffleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // Always make sure play button toggle state is set to false
+                playButton.setChecked(true);
+                pressedPlay = false;
+
+                // So here, when the shuffle button is pressed from the main activity,
+                // we want the play panel activity to open, and we want to
+                // play the first song of a shuffled played list.
+                // First we need to take the songObjectList, and we need to shuffle it
+                // (which we do from the main activity).
+                // Second we need to pass the shuffled list to static music player
+                // (which we do here).
+                // Third we need to call the static music player play method on the first song
+                // in the shuffled list (which we do here).
+
+                setList(shuffledList);
+                tryToPlaySong(shuffledList.get(0));
+
+                // We want to reshuffle the list again every time the user clicks on the shuffle button
+                // since we want to save that list for the next time the user click on the button again.
+
+                Collections.shuffle(shuffledList);
+            }
+        });
+    }
+
+
+
+    public static void SetViewPagerListener(){
+
+        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            public void onPageScrollStateChanged(int state) {}
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+
+            public void onPageSelected(int position) {
+
+                tryToPlaySong(songObjectList.get(position));
             }
         });
     }

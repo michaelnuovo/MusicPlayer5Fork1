@@ -46,7 +46,7 @@
 
         <ToggleButton
             android:id="@+id/playbutton"
-            android:background="@drawable/playbutton"
+            android:background="@drawable/selector_button_play"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_margin="10dp"/>

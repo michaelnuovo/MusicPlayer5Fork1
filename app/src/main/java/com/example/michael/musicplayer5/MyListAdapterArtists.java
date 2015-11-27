@@ -49,7 +49,7 @@ public class MyListAdapterArtists extends ArrayAdapter<ArtistObject> {
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
 
-            convertView = inflater.inflate(R.layout.list_view_item_artists, parent, false);
+            convertView = inflater.inflate(R.layout.item_list_view_artists, parent, false);
             convertView.setTag(viewHolder);
 
             // if an existing view is being reused

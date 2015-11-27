@@ -10,44 +10,23 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.ToggleButton;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    static MyPageAdapterMain pageAdapter;
-    static List<Fragment> fragments;
-
-    static ArrayList<SongObject> songObjectList = new ArrayList<>();
-    static ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
-    static ArrayList<ArtistObject> artistObjectList = new ArrayList<>();
-
-    private Toolbar toolbar;
-    private TabLayout tab;
-    private ViewPager viewPager;
-    private String tabTitle;
-
-    static TextView currentTitleView;
-    static TextView currentArtistView;
-
-
-
-    // TEST TEST
-
-    /*
-    static String currentTitle;
-    static String currentArtist;
-    */
+    static  ArrayList<SongObject> mainList = null; // we need this variables to be global so that it can be referenced from other activities
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,25 +35,32 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         /** Make song object list, album object list, and artist object list **/
-        songObjectList = new ArrayList<>();
+        ArrayList<SongObject> songObjectList = new ArrayList<>();
+        ArrayList<SongObject> songObjectList_shuffled = new ArrayList<>();
+        ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
+        ArrayList<ArtistObject> artistObjectList = new ArrayList<>();
+        mainList = songObjectList;
+
+        /** Populate lists **/
         scanMedia();
         Cursor songListCursor = GetSongListCursor();
-        MakeLists(songListCursor);
+        MakeLists(songListCursor, songObjectList, songObjectList_shuffled, albumObjectList, artistObjectList);
+        Collections.shuffle(songObjectList_shuffled);
 
-        /** Pass song object list to static music player **/
-        StaticMusicPlayer.setSongObjectList(songObjectList);
+        /** Initialize static music player **/
+        StaticMusicPlayer.setList(songObjectList);
 
         /** Set adapter for main activity **/
-        fragments = getFragments();
-        pageAdapter = new MyPageAdapterMain(getSupportFragmentManager(), fragments);
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        List<Fragment> fragments = getFragments(songObjectList, artistObjectList, albumObjectList);
+        MyPageAdapterMain pageAdapter = new MyPageAdapterMain(getSupportFragmentManager(), fragments);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         //viewPager.setPageTransformer(true, new ZoomOutPageTransformer());
         viewPager.setPageTransformer(true, new DepthPageTransformer());
         viewPager.setAdapter(pageAdapter);
         viewPager.setCurrentItem(3);
 
         /** Set tab strip for main activity**/
-        tab = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tab = (TabLayout) findViewById(R.id.tabs);
         tab.setupWithViewPager(viewPager);
 
         /** Set play button and play button listener **/
@@ -82,13 +68,11 @@ public class MainActivity extends AppCompatActivity {
         StaticMusicPlayer.setPlayButtonListener();
 
         /** Set shuffle button and shuffle button listener **/
-        StaticShuffleButton.setShuffledList(songObjectList);
-        StaticShuffleButton.setButton((Button) findViewById(R.id.shuffleButton));
-        StaticShuffleButton.setButtonListener();
+        StaticMusicPlayer.setShuffleList(songObjectList_shuffled);
+        StaticMusicPlayer.setShuffleButton((Button) findViewById(R.id.shuffleButton));
+        StaticMusicPlayer.setShuffleButtonListener();
 
-
-
-        mainFooterListener();
+        mainFooterListener(songObjectList);
 
         /** Draw Footer Shadow
         float elevation = 2;
@@ -100,9 +84,18 @@ public class MainActivity extends AppCompatActivity {
                 elevation * density, ((elevation + 1) * density) + 1
         ));**/
 
+
+
+
+
     }
 
-    private List<Fragment> getFragments() {
+
+
+    private List<Fragment> getFragments(ArrayList<SongObject> songObjectList,
+                                        ArrayList<ArtistObject> artistObjectList,
+                                        ArrayList<AlbumObject> albumObjectList) {
+
 
         // An empty array list
         List<Fragment> fList = new ArrayList<Fragment>();
@@ -124,11 +117,10 @@ public class MainActivity extends AppCompatActivity {
         return fList;
     }
 
-    public void mainFooterListener(){
+    public void mainFooterListener(final ArrayList<SongObject> songObjectList){
 
         LinearLayout mainFooter = (LinearLayout) findViewById(R.id.activity_main_footer);
 
-        /** Title Listener **/
         mainFooter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -136,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                 // Open the play panel
 
                 Intent intent = new Intent(MainActivity.this, PlayPanelActivity.class);
-                //intent.putExtra("key", value); //Optional parameters
+                //intent.putExtra("songObjectList", songObjectList); //Optional parameters
                 MainActivity.this.startActivity(intent);
                 //overridePendingTransition(R.anim.slide_up, R.anim.dont_move);
 
@@ -144,9 +136,9 @@ public class MainActivity extends AppCompatActivity {
                 // the new activity but without restarting the song.
                 // If a song is not playing, then we want to play the first song on the list.
                 if(StaticMusicPlayer.mediaPlayer.isPlaying()){
-                    StaticMusicPlayer.tryToPlaySong(songObjectList.get(0));
+                   // do nothing
                 } else {
-                    // do nothing
+                    StaticMusicPlayer.tryToPlaySong(songObjectList.get(0));
                 }
             }
         });
@@ -209,7 +201,13 @@ public class MainActivity extends AppCompatActivity {
         return mCursor;
     }
 
-    private void MakeLists(Cursor mCursor) {
+
+
+    private void MakeLists(Cursor mCursor,
+                           ArrayList<SongObject> songObjectList,
+                           ArrayList<SongObject> songObjectList_shuffled,
+                           ArrayList<AlbumObject> albumObjectList,
+                           ArrayList<ArtistObject> artistObjectList) {
 
         try{
 
@@ -217,10 +215,10 @@ public class MainActivity extends AppCompatActivity {
 
                 do {
 
-                    //Log.v("ASD@#C ","");
+
 
                     // Initialize songObject
-                    SongObject songObject = new SongObject();
+                    final SongObject songObject = new SongObject();
 
                     String songTitle = mCursor.getString(2);
                     songObject.songTitle = songTitle;
@@ -237,15 +235,21 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                    // If albumArtURI return null, then get some other image URI
                     if(songObject.albumArtURI != null){
-                        // leave as is
 
-                    } else { // search folder for image file e.g. a jpg
+                        // The URI exists, so we leave as is
+
+                    } else {
+
+                        // do nothing
+                        // null albumArtURI will be handled by Picasso and Volley in the adapter classes
+                    }
+
+                    /* else { // search folder for image file e.g. a jpg
                         String dirPath = songObject.songPath;
                         dirPath = dirPath.substring(0,dirPath.lastIndexOf('/'));
                         File mFile = new File(dirPath);
-                        //Log.v("TAG dirPath", String.valueOf(dirPath));
+
                         File[] mFiles = mFile.listFiles();
 
                         for(File aFile : mFiles){
@@ -254,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 // Get the absolute path of the file if its an image
                                 songObject.albumArtURI = aFile.getAbsolutePath();
-                                //Log.v("TAG URI PATH MAIN",String.valueOf(songObject.albumArtURI));
+
                                 break;
 
                             } else {
@@ -265,25 +269,20 @@ public class MainActivity extends AppCompatActivity {
                                 // data/data/yourapp/app_data/imageDir
 
 
-                                /*
-                                Log.v("TAG A","");
-                                Bitmap bm = BitmapFactory.decodeResource(this.getResources(), R.drawable.mdefault);
 
 
-                                Log.v("TAG B","");
-                                ImageUtil.saveToInternalSorage(this, "imageDir", "defaultImage", bm);
-                                Log.v("TAG C", "");
-                                String PACKAGE_NAME = getApplicationContext().getPackageName();
-                                Log.v("TAG D","");
-                                songObject.albumArtURI = "data/data/"+PACKAGE_NAME+"/app_data/" + "imageDir";
-                                Log.v("TAG E","");*/
+                                //Bitmap bm = BitmapFactory.decodeResource(this.getResources(), R.drawable.mdefault);
+                                //ImageUtil.saveToInternalSorage(this, "imageDir", "defaultImage", bm);
+                                //String PACKAGE_NAME = getApplicationContext().getPackageName();
+                                //songObject.albumArtURI = "data/data/"+PACKAGE_NAME+"/app_data/" + "imageDir";
+
 
 
 
 
                             }
                         }
-                    }
+                    }*/
 
                     // add albumTitle
                     String albumTitle = mCursor.getString(0);
@@ -304,6 +303,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                     songObjectList.add(songObject);
+                    songObjectList_shuffled.add(songObject);
 
                     String albumArtist = songObject.artist; // can an album have more than one artist? yes...
                     String albumArtURI = songObject.albumArtURI;
@@ -375,9 +375,10 @@ public class MainActivity extends AppCompatActivity {
             // Close cursor
             mCursor.close();
 
-            for(int i=0; i < songObjectList.size()-1;i++){
-                Log.v("TAG song title ",String.valueOf(songObjectList.get(i).songTitle));
-                Log.v("TAG song album URI ",String.valueOf(songObjectList.get(i).albumArtURI));
+
+
+            for(SongObject so : songObjectList) {
+                Log.v("tag", "!@EE#@DF album URI = " + String.valueOf(so.albumArtURI));
             }
         }
     }
@@ -443,4 +444,41 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {return true;}
         return super.onOptionsItemSelected(item);
     }
+
+    public class SongInfo {
+        public String wrapperType;
+        public String kind;
+        public Integer artistId;
+        public Integer collectionId;
+        public Integer trackId;
+        public String artistName;
+        public String collectionName;
+        public String trackName;
+        public String collectionCensoredName;
+        public String trackCensoredName;
+        public String artistViewUrl;
+        public String collectionViewUrl;
+        public String trackViewUrl;
+        public String previewUrl;
+        public String artworkUrl30;
+        public String artworkUrl60;
+        public String artworkUrl100;
+        public Float collectionPrice;
+        public Float trackPrice;
+        public String releaseDate;
+        public String collectionExplicitness;
+        public String trackExplicitness;
+        public Integer discCount;
+        public Integer discNumber;
+        public Integer trackCount;
+        public Integer trackNumber;
+        public Integer trackTimeMillis;
+        public String country;
+        public String currency;
+        public String primaryGenreName;
+        public String radioStationUrl;
+        public Boolean isStreamable;
+    }
+
+
 }

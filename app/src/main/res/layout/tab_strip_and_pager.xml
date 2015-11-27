@@ -40,7 +40,7 @@ android:layout_height="match_parent"
             android:layout_height="wrap_content"
             app:tabMode="scrollable"
             app:tabGravity="center"
-            android:background="?attr/colorPrimary"/>
+            android:background="#191919"/>
 
     </android.support.design.widget.AppBarLayout>
 

@@ -2,7 +2,6 @@ package com.example.michael.musicplayer5;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,11 +32,11 @@ public class MyFragmentArtists extends Fragment {
 
         artistObjectList = getArguments().getParcelableArrayList(EXTRA_MESSAGE);
 
-        View rootView = inflater.inflate(R.layout.my_fragment_layout_artists, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_layout_artists, container, false);
 
         listView = (ListView) rootView.findViewById(R.id.fragmentListViewArtists);
 
-        MyListAdapterArtists adapter = new MyListAdapterArtists(getActivity(), R.layout.list_view_item_artists, artistObjectList);
+        MyListAdapterArtists adapter = new MyListAdapterArtists(getActivity(), R.layout.item_list_view_artists, artistObjectList);
         listView.setAdapter(adapter);
 
 
