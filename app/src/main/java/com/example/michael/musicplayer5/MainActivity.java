@@ -1,5 +1,6 @@
 package com.example.michael.musicplayer5;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ToggleButton;
 
 import java.io.File;
@@ -26,13 +28,30 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    static  ArrayList<SongObject> mainList = null; // we need this variables to be global so that it can be referenced from other activities
+    static ArrayList<SongObject> mainList = null; // we need this variables to be global so that it can be referenced from other activities
+
+    private static Context mContext;
+
+
+    public static Context getAppContext() {
+        return mContext;
+    }
+
+
+    public static void task(){
+
+        MyFragmentTracks.adapter.notifyDataSetChanged();
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mContext = getApplicationContext();
 
         /** Make song object list, album object list, and artist object list **/
         ArrayList<SongObject> songObjectList = new ArrayList<>();
@@ -375,11 +394,6 @@ public class MainActivity extends AppCompatActivity {
             // Close cursor
             mCursor.close();
 
-
-
-            for(SongObject so : songObjectList) {
-                Log.v("tag", "!@EE#@DF album URI = " + String.valueOf(so.albumArtURI));
-            }
         }
     }
 

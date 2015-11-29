@@ -1,10 +1,12 @@
 package com.example.michael.musicplayer5;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,13 +26,15 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
     Context context;
     int layoutResourceId;
     ArrayList<SongObject> songObjectList;
+    Activity activity;
 
-    public MyListAdapterTracks(Context context, int layoutResourceId, ArrayList<SongObject> songObjectList) {
+    public MyListAdapterTracks(Context context, int layoutResourceId, ArrayList<SongObject> songObjectList, Activity activity) {
 
         super(context, layoutResourceId, songObjectList);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.songObjectList = songObjectList;
+        this.activity = activity;
     }
 
     static class ViewHolder {
@@ -53,7 +57,7 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         ViewHolder viewHolder; // view lookup cache stored in tag
 
         // if an existing view is not being reused
-        if (convertView == null) {
+        //if (convertView == null) {
 
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
@@ -62,10 +66,10 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
             convertView.setTag(viewHolder);
 
             // if an existing view is being reused
-        } else {
+        //} else {
             viewHolder = (ViewHolder) convertView.getTag();
             //viewHolder.albumArt = null;
-        }
+        //}
 
         // Set view holder references
 
@@ -95,39 +99,37 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         //Log.v("artist",String.valueOf(songObject.artist));
 
 
-        /** SET ALBUM ART TO LIST ITEMS USING PICASSO IMAGE LIBRARY **/
 
+        // If the album art uri exists, then use it
         if(songObject.albumArtURI != null){
 
+            // Picasso doesn't process URIs as strings, but as files
             File f = new File(songObject.albumArtURI);
 
-            /** CODE WITHOUT CIRCULAR TRANSFORM
-             Picasso.with(viewHolder.albumArt.getContext())
-             .load(f)
-             .placeholder(R.drawable.grayalbumart)
-             .into(viewHolder.albumArt);**/
-
-            /** CODE WITH CIRCULAR TRANSFORM **/
             Picasso.with(viewHolder.albumArt.getContext())
                     .load(f)
                     .transform(new CircleTransform())
                     .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);
-        } else {
 
-            /** CODE WITHOUT CIRCULAR TRANSFORM
-             Picasso.with(viewHolder.albumArt.getContext())
-             .load(songObject.albumArtURI)
-             .placeholder(R.drawable.grayalbumart)
-             .into(viewHolder.albumArt);**/
+        // otherwise check if the URL exists and use that
+        } else if (songObject.albumURL != null) {
 
-            /** CODE WITH CIRCULAR TRANSFORM **/
+            String URL = songObject.albumURL;
 
             Picasso.with(viewHolder.albumArt.getContext())
-                    .load(songObject.albumArtURI)
+                    .load(URL)
                     .transform(new CircleTransform())
                     .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);
+            
+        // otherwise download the image url and use that
+        } else {
+
+            Log.v("TAG","Position in adapter is "+ String.valueOf(position));
+            Log.v("TAG", "The albumArtURI is " + String.valueOf(songObject.albumArtURI));
+            VolleyClass vc = new VolleyClass(position, activity);
+            vc.runVolley();
         }
 
         return convertView;
@@ -173,4 +175,24 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
 
 }
 
+/** CODE WITHOUT CIRCULAR TRANSFORM
+ Picasso.with(viewHolder.albumArt.getContext())
+ .load(f)
+ .placeholder(R.drawable.grayalbumart)
+ .into(viewHolder.albumArt);**/
 
+/** CODE WITH CIRCULAR TRANSFORM **/
+
+/** CODE WITHOUT CIRCULAR TRANSFORM
+ Picasso.with(viewHolder.albumArt.getContext())
+ .load(songObject.albumArtURI)
+ .placeholder(R.drawable.grayalbumart)
+ .into(viewHolder.albumArt);**/
+
+/** CODE WITH CIRCULAR TRANSFORM
+
+ Picasso.with(viewHolder.albumArt.getContext())
+ .load(songObject.albumArtURI)
+ .transform(new CircleTransform())
+ .placeholder(R.drawable.blackcircle)
+ .into(viewHolder.albumArt); **/

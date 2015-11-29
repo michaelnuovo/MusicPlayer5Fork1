@@ -13,6 +13,7 @@ public class SongObject implements Parcelable{
     public String songTitle;
     public String songPath;
     public String songDuration;
+    public String albumURL;
 
     public SongObject(){
         super();
@@ -44,8 +45,10 @@ public class SongObject implements Parcelable{
         songTitle = in.readString();
         songPath = in.readString();
         songDuration = in.readString();
+        albumURL = in.readString();
 
     }
+
     public int describeContents() {
         return 0;
     }
@@ -57,6 +60,7 @@ public class SongObject implements Parcelable{
         dest.writeString(songTitle);
         dest.writeString(songPath);
         dest.writeString(songDuration);
+        dest.writeString(albumURL);
 
     }
 }

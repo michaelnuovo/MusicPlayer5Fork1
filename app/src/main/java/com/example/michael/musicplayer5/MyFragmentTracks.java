@@ -1,5 +1,6 @@
 package com.example.michael.musicplayer5;
 
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,7 +15,7 @@ import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
-public class MyFragmentTracks extends Fragment {
+public class MyFragmentTracks extends Fragment implements MyInterface {
 
     /** Fragment Variables **/
     public static final String EXTRA_MESSAGE = "EXTRA_MESSAGE";
@@ -26,9 +27,40 @@ public class MyFragmentTracks extends Fragment {
 
     LinearLayout TitlePanel;
 
+    static MyListAdapterTracks adapter;
+
+    @Override
+    public void myTask() {
+
+        adapter.notifyDataSetChanged();
+
+    }
+
+    public static void task(){
+
+        adapter.notifyDataSetChanged();
+
+    }
+
+    Application app;
+
+
+
+    public void run() {
+        getActivity().runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+
+        });
+    }
+
     /** Static Factory Method for Fragment Instantiation **/
     public static final MyFragmentTracks newInstance(ArrayList<SongObject> arrayList)
     {
+
         MyFragmentTracks f = new MyFragmentTracks();
         Bundle bdl = new Bundle(1);
         bdl.putParcelableArrayList(EXTRA_MESSAGE, arrayList);
@@ -46,7 +78,7 @@ public class MyFragmentTracks extends Fragment {
 
         listView = (ListView) rootView.findViewById(R.id.fragmentListView);
 
-        MyListAdapterTracks adapter = new MyListAdapterTracks(getActivity(), R.layout.item_list_view, songList);
+        adapter = new MyListAdapterTracks(getActivity(), R.layout.item_list_view, songList, getActivity());
         listView.setAdapter(adapter);
 
 

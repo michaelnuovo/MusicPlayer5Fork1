@@ -5,5 +5,5 @@ package com.example.michael.musicplayer5;
  */
 public interface MyInterface {
 
-    public String myTask (String URL);
+    public void myTask ();
 }
