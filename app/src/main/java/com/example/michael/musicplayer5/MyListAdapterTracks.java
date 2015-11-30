@@ -14,11 +14,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
@@ -27,6 +34,15 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
     int layoutResourceId;
     ArrayList<SongObject> songObjectList;
     Activity activity;
+
+    public static RequestQueue mRequestQueue;
+
+    public static RequestQueue getRequestQueue() {
+        if (mRequestQueue == null) {
+            mRequestQueue = Volley.newRequestQueue(MainActivity.getAppContext());
+        }
+        return mRequestQueue;
+    }
 
     public MyListAdapterTracks(Context context, int layoutResourceId, ArrayList<SongObject> songObjectList, Activity activity) {
 
@@ -53,11 +69,10 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         // Get the data item for this position
         SongObject songObject = songObjectList.get(position);
 
-
         ViewHolder viewHolder; // view lookup cache stored in tag
 
         // if an existing view is not being reused
-        //if (convertView == null) {
+        if (convertView == null) {
 
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
@@ -66,10 +81,12 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
             convertView.setTag(viewHolder);
 
             // if an existing view is being reused
-        //} else {
+        } else {
             viewHolder = (ViewHolder) convertView.getTag();
-            //viewHolder.albumArt = null;
-        //}
+            //viewHolder.albumArt = null; // Prevents recycling from overlapping list item contents
+        }
+
+
 
         // Set view holder references
 
@@ -78,6 +95,9 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         viewHolder.title = (TextView) convertView.findViewById(R.id.title);
         viewHolder.albumArt = (ImageView) convertView.findViewById(R.id.album_art);
         //viewHolder.duration = (TextView) convertView.findViewById(R.id.duration);
+
+        // Reset the image so we don't get overlap from recycling
+        viewHolder.albumArt.setBackgroundResource(R.drawable.blackcircle);
 
         // Set values to referenced view objects
 
@@ -101,9 +121,10 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
 
 
         // If the album art uri exists, then use it
-        if(songObject.albumArtURI != null){
+        //if(songObject.albumArtURI != null){
 
             // Picasso doesn't process URIs as strings, but as files
+        if(songObject.albumArtURI != null){
             File f = new File(songObject.albumArtURI);
 
             Picasso.with(viewHolder.albumArt.getContext())
@@ -111,28 +132,88 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
                     .transform(new CircleTransform())
                     .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);
-
-        // otherwise check if the URL exists and use that
-        } else if (songObject.albumURL != null) {
-
-            String URL = songObject.albumURL;
+        } else {
 
             Picasso.with(viewHolder.albumArt.getContext())
-                    .load(URL)
+                    .load(R.drawable.blackcircle)
                     .transform(new CircleTransform())
                     .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);
-            
-        // otherwise download the image url and use that
-        } else {
 
-            Log.v("TAG","Position in adapter is "+ String.valueOf(position));
-            Log.v("TAG", "The albumArtURI is " + String.valueOf(songObject.albumArtURI));
-            VolleyClass vc = new VolleyClass(position, activity);
-            vc.runVolley();
         }
 
+
+
+
+        // otherwise check if the URL exists and use that
+        //} //else if (songObject.albumURL != null) {
+
+           // String URL = songObject.albumURL;
+
+          //  Picasso.with(viewHolder.albumArt.getContext())
+          //          .load(URL)
+          //          .transform(new CircleTransform())
+           //         .placeholder(R.drawable.blackcircle)
+          //          .into(viewHolder.albumArt);
+
+        // otherwise download the image url and use that
+
+
+            //VolleyClass vc = new VolleyClass(position, activity);
+            //vc.runVolley();
+
+            String JSONURL = "https://itunes.apple.com/search?term=michael+jackson";
+
+            //RequestQueue queue = Volley.newRequestQueue(MainActivity.getAppContext());
+            getRequestQueue();
+
+            GsonRequest<SongInfo> myReq = new GsonRequest<SongInfo>(
+                    Request.Method.GET,
+                    JSONURL,
+                    SongInfo.class,
+                    null,
+                    createMyReqSuccessListener(),
+                    createMyReqErrorListener());
+
+        mRequestQueue.add(myReq);
+            Log.v("TAG", "Here");
+/*
+            new Thread() {
+                public void run() {
+
+
+
+
+                }
+            }.start();*/
+
+
         return convertView;
+    }
+
+    public class MyClass {
+
+    }
+
+    private Response.Listener<SongInfo> createMyReqSuccessListener() {
+        return new Response.Listener<SongInfo>() {
+            @Override
+            public void onResponse(SongInfo response) {
+                // Do whatever you want to do with response;
+                // Like response.tags.getListing_count(); etc. etc.
+
+                Log.v("TAG", "This is the value of the string"+String.valueOf(response.artworkUrl30));
+            }
+        };
+    }
+
+    private Response.ErrorListener createMyReqErrorListener() {
+        return new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // Do whatever you want to do with error.getMessage();
+            }
+        };
     }
 
     public String FormatTime(String duration){

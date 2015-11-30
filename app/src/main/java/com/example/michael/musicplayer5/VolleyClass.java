@@ -75,10 +75,10 @@ public class VolleyClass {
 
                                     // So here I need to update the array list and the list adapter respectively
 
-                                    Log.v("TAG","Position is "+String.valueOf(listIndex));
-                                    Log.v("TAG", "URI is "+toString().valueOf(songObjectList.get(listIndex).albumArtURI));
+                                    //Log.v("TAG","Position is "+String.valueOf(listIndex));
+                                    //Log.v("TAG", "URI is "+toString().valueOf(songObjectList.get(listIndex).albumArtURI));
                                     songObjectList.get(listIndex).albumURL = JSONObjectsList[0].artworkUrl30;
-                                    Log.v("TAG", "URI is "+toString().valueOf(songObjectList.get(listIndex).albumArtURI));
+                                    //Log.v("TAG", "URI is "+toString().valueOf(songObjectList.get(listIndex).albumArtURI));
                                     //adapter.notifyDataSetChanged();
                                     //MyInterface mf;
                                     //mf.myTask();
