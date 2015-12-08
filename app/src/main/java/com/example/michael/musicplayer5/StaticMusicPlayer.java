@@ -45,6 +45,10 @@ public final class StaticMusicPlayer {
 
     private static ViewPager viewPager;
 
+    static private boolean musicIsPlaying = false; // Variable sets the play button toggle mode
+
+    static private boolean isPaused;
+
     /** Empty Constructor **/
 
     private StaticMusicPlayer(){
@@ -62,6 +66,7 @@ public final class StaticMusicPlayer {
     public static void setPlayButton(ToggleButton btn){
 
         playButton = btn;
+        playButton.setChecked(musicIsPlaying);
     }
 
     public static void setShuffleButton(ToggleButton btn){
@@ -99,8 +104,21 @@ public final class StaticMusicPlayer {
         viewPager = vp;
     }
 
-    /** Get song **/
+    public static void setSongCompletionListener(){
 
+        // If a song finishes playing
+        mediaPlayer.setOnCompletionListener(new android.media.MediaPlayer.OnCompletionListener() {
+
+            public void onCompletion(android.media.MediaPlayer mp) {
+
+                // if a song finishes we need to set musicIsPlaying to false for the toggle button state
+                musicIsPlaying = false;
+            }
+        });
+
+    }
+
+    /** Get song **/
     public static void tryToPlayNextSong(){
 
         // if shuffle mode is on do this,
@@ -121,11 +139,13 @@ public final class StaticMusicPlayer {
     }
 
     /** Listeners**/
-
     public static void tryToPlaySong(final SongObject songObject) {
 
         noSongHasBeenPlayedYet = false;
         currentIndex = songObjectList.indexOf(songObject);
+        musicIsPlaying = true;
+        isPaused = false;
+        //playButton.setChecked(true);
 
         new Thread() {
             public void run() {
@@ -147,7 +167,6 @@ public final class StaticMusicPlayer {
 
     private static void playSong(SongObject songObject) throws IllegalArgumentException, IllegalStateException, IOException {
 
-
         mediaPlayer.reset();
         mediaPlayer.reset();
         mediaPlayer.setDataSource(songObject.songPath);
@@ -155,10 +174,7 @@ public final class StaticMusicPlayer {
         mediaPlayer.start();
 
 
-
     }
-
-
 
     public static void setSkipForwardsListener() {
 
@@ -263,22 +279,26 @@ public final class StaticMusicPlayer {
 
                 } else {
 
+                    Log.v("TAG","here");
                     // So if we push play, then
 
-                    if(pressedPlay == true){ //
-                        pressedPlay = false;
+                    if(isPaused == true){ //
+
+                        Log.v("TAG","No longer pause");
+                        isPaused = false;
                         mediaPlayer.start();
+                        musicIsPlaying = true;
 
                     }else{                   // pause
-                        pressedPlay = true;
+                        Log.v("TAG","Paused now");
+                        isPaused = true;
                         mediaPlayer.pause();
+                        musicIsPlaying = false;
                     }
                 }
             }
         });
     }
-
-
 
     public static void setShuffleButtonListener(){
 
@@ -310,8 +330,6 @@ public final class StaticMusicPlayer {
             }
         });
     }
-
-
 
     public static void SetViewPagerListener(){
 

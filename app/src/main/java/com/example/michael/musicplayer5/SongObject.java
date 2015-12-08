@@ -14,6 +14,7 @@ public class SongObject implements Parcelable{
     public String songPath;
     public String songDuration;
     public String albumURL;
+    public String albumID;
 
     public SongObject(){
         super();
@@ -46,6 +47,7 @@ public class SongObject implements Parcelable{
         songPath = in.readString();
         songDuration = in.readString();
         albumURL = in.readString();
+        albumID = in.readString();
 
     }
 
@@ -61,6 +63,6 @@ public class SongObject implements Parcelable{
         dest.writeString(songPath);
         dest.writeString(songDuration);
         dest.writeString(albumURL);
-
+        dest.writeString(albumID);
     }
 }

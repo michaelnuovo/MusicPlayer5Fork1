@@ -171,7 +171,7 @@ public class MyFragmentTracks extends Fragment implements MyInterface {
 
 
                 StaticMusicPlayer.tryToPlaySong(songList.get(arg2)); // arg2 is a sonObject
-                StaticMusicPlayer.setList(songList);
+
 
                 Intent intent = new Intent(getActivity(), PlayPanelActivity.class);
                 startActivity(intent);

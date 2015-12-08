@@ -7,6 +7,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,9 +20,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by michael on 11/15/15.
- */
+//PagerAdapter
+//FragmentStatePagerAdapter
+
 public class MyPagerAdapterPlay extends PagerAdapter {
 
     private Context mContext;
@@ -30,10 +31,13 @@ public class MyPagerAdapterPlay extends PagerAdapter {
 
     public MyPagerAdapterPlay(Context context) {
 
+        //http://stackoverflow.com/questions/17158817/extending-fragmentpageradapter-has-issues-with-a-missing-super-constructor
+        //super(fm);
         this.mContext = context;
         //this.songObjectsList = songObjectsList;
 
     }
+
 
     @Override
     public Object instantiateItem(ViewGroup collection, int position) {

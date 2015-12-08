@@ -40,13 +40,13 @@
 
             <!--  not focused / not pressed -->
             <item
-                android:drawable="@drawable/button_pause_focused"
+                android:drawable="@drawable/button_pause_notfocused_notpressed"
                 android:state_focused="false"
                 android:state_pressed="false" />
 
             <!-- not focused / pressed -->
             <item
-                android:drawable="@drawable/button_play_notfocused_pressed"
+                android:drawable="@drawable/button_pause_notfocused_pressed"
                 android:state_checked="true"
                 android:state_focused="false"
                 android:state_pressed="true" />
@@ -55,13 +55,13 @@
 
             <!-- focused / not pressed -->
             <item
-                android:drawable="@drawable/button_play_focused_notpressed"
+                android:drawable="@drawable/button_pause_notfocused_pressed"
                 android:state_checked="true"
                 android:state_focused="true" />
 
             <!-- focused / pressed -->
             <item
-                android:drawable="@drawable/button_play_focused_pressed"
+                android:drawable="@drawable/button_pause_notfocused_pressed"
                 android:state_checked="true"
                 android:state_focused="true"
                 android:state_pressed="true" />

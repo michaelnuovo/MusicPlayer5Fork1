@@ -1,5 +1,7 @@
 package com.example.michael.musicplayer5;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -21,29 +23,31 @@ import android.widget.ListAdapter;
 import android.widget.ToggleButton;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    //testing
+
     static ArrayList<SongObject> mainList = null; // we need this variables to be global so that it can be referenced from other activities
-
     private static Context mContext;
-
-
     public static Context getAppContext() {
         return mContext;
     }
 
+    @Override
+    public void onResume(){
 
-    public static void task(){
-
-        MyFragmentTracks.adapter.notifyDataSetChanged();
-
+        /** Set play button and play button listener **/
+        StaticMusicPlayer.setPlayButton((ToggleButton) findViewById(R.id.main_playButton));
+        StaticMusicPlayer.setPlayButtonListener();
+        super.onResume();
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
         ArrayList<ArtistObject> artistObjectList = new ArrayList<>();
         mainList = songObjectList;
+        StaticMusicPlayer.setList(mainList);
 
         /** Populate lists **/
         scanMedia();
@@ -179,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
                 null
         );
 
+
+
         if (mCursor.moveToFirst()) {
 
             String var = mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
@@ -199,7 +206,8 @@ public class MainActivity extends AppCompatActivity {
         // Set getContentResolver().query(contentURI, projection, selection, null, order) arguments
 
         Uri contentURI = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Audio.Media.ALBUM,
+        String[] projection = {
+                MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.ARTIST,
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.DATA,
@@ -252,7 +260,10 @@ public class MainActivity extends AppCompatActivity {
                     String[] albumID = {mCursor.getString(5)};
                     songObject.albumArtURI = GetAlbumArtURI(albumID);
 
+                    // Add albumId
+                    songObject.albumID = albumID[0];
 
+                    //Log.v("TAG","URI is "+String.valueOf(songObject.albumArtURI));
 
                     if(songObject.albumArtURI != null){
 

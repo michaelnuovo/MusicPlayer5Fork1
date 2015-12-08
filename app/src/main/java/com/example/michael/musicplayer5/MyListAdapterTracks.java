@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +19,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.Volley;
 import com.squareup.picasso.Picasso;
 
@@ -35,6 +37,7 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
     ArrayList<SongObject> songObjectList;
     Activity activity;
 
+
     public static RequestQueue mRequestQueue;
 
     public static RequestQueue getRequestQueue() {
@@ -51,6 +54,7 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         this.context = context;
         this.songObjectList = songObjectList;
         this.activity = activity;
+
     }
 
     static class ViewHolder {
@@ -123,86 +127,88 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         // If the album art uri exists, then use it
         //if(songObject.albumArtURI != null){
 
-            // Picasso doesn't process URIs as strings, but as files
+        // If the albumArtURI exists, then Picasso will use it
         if(songObject.albumArtURI != null){
+            // Picasso doesn't process URIs as strings, but as files
             File f = new File(songObject.albumArtURI);
-
             Picasso.with(viewHolder.albumArt.getContext())
                     .load(f)
                     .transform(new CircleTransform())
                     .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);
-        } else {
+        }
+
+        /* If songObject doesn't have URI but it has a URL do this
+        else if(songObject.albumURL != null){
+
+            Picasso.with(viewHolder.albumArt.getContext())
+                    .load(songObject.albumURL)
+                    .transform(new CircleTransform())
+                    .placeholder(R.drawable.blackcircle)
+                    .into(viewHolder.albumArt);
+        } */
+
+        // If the albumArtURI does not exist, then the image must be downloaded before Picasso can use it,
+        // but I still have to call Picasso so it can keep track of which views are being recycled,
+        // so I just use the empty black circle, same as the placeholder image.
+        // Eventually the images will downloaded, and when they are, I will call notifyDataSetChanged() to update the adapter.
+        else {
+
+            // Here we will download and parse a JSON object from iTunes for an image URl (using Volley)
+            // Then we will download the image (again using Volley)
+            // Then will store the image (using a new thread)
+            // Then Picasso will embed the image from storage to the list view (asynchronously)
+            String JSONURL = "https://itunes.apple.com/search?term=michael+jackson";
+            getRequestQueue();
+            GsonRequest<SongInfo> myReq = new GsonRequest<SongInfo>(
+                    Request.Method.GET,
+                    JSONURL,
+                    SongInfo.class,
+                    null,
+                    createMyReqSuccessListener(songObject, viewHolder),
+                    createMyReqErrorListener());
+            mRequestQueue.add(myReq);
 
             Picasso.with(viewHolder.albumArt.getContext())
                     .load(R.drawable.blackcircle)
                     .transform(new CircleTransform())
                     .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);
-
         }
-
-
-
-
-        // otherwise check if the URL exists and use that
-        //} //else if (songObject.albumURL != null) {
-
-           // String URL = songObject.albumURL;
-
-          //  Picasso.with(viewHolder.albumArt.getContext())
-          //          .load(URL)
-          //          .transform(new CircleTransform())
-           //         .placeholder(R.drawable.blackcircle)
-          //          .into(viewHolder.albumArt);
-
-        // otherwise download the image url and use that
-
-
-            //VolleyClass vc = new VolleyClass(position, activity);
-            //vc.runVolley();
-
-            String JSONURL = "https://itunes.apple.com/search?term=michael+jackson";
-
-            //RequestQueue queue = Volley.newRequestQueue(MainActivity.getAppContext());
-            getRequestQueue();
-
-            GsonRequest<SongInfo> myReq = new GsonRequest<SongInfo>(
-                    Request.Method.GET,
-                    JSONURL,
-                    SongInfo.class,
-                    null,
-                    createMyReqSuccessListener(),
-                    createMyReqErrorListener());
-
-        mRequestQueue.add(myReq);
-            Log.v("TAG", "Here");
-/*
-            new Thread() {
-                public void run() {
-
-
-
-
-                }
-            }.start();*/
-
 
         return convertView;
     }
 
-    public class MyClass {
-
-    }
-
-    private Response.Listener<SongInfo> createMyReqSuccessListener() {
+    // onResponse listener
+    private Response.Listener<SongInfo> createMyReqSuccessListener(final SongObject songObject, final ViewHolder viewHolder) {
         return new Response.Listener<SongInfo>() {
             @Override
             public void onResponse(SongInfo response) {
-                // Do whatever you want to do with response;
-                // Like response.tags.getListing_count(); etc. etc.
 
-                Log.v("TAG", "This is the value of the string"+String.valueOf(response.artworkUrl30));
+                final String url = response.results.get(0).artworkUrl30;
+                songObject.albumURL = url;
+
+                ImageRequest myImageReq = new ImageRequest(url, new Response.Listener<Bitmap>() {
+                    @Override
+                    public void onResponse(final Bitmap response) {
+
+                        // Save the image to internal storage and record its URI in MediaStore.Audio.Albums.ALBUM_ART
+                        // This operation will need a new thread so Picasso and the read of the UI thread can continue adapting list elements without interruption
+                        new Thread() {
+                            public void run() {
+                                SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);
+                                sbmruri.run();
+
+                                // So here I need to update the albumART URIs by (a) writing to the meta data and (b) updating the current song object URI
+                                // that way the URI is there on application restart, but also now so that Picasso has an image source to adapt to the list
+
+                                //notifyDataSetChanged(); // Notify the this list adapter class that the underlying data has changed
+                            }
+                        }.start();
+                    }
+                }, 0, 0, null, null);
+
+                mRequestQueue.add(myImageReq);
             }
         };
     }
