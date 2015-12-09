@@ -1,10 +1,9 @@
 package com.example.michael.musicplayer5;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -13,19 +12,14 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ToggleButton;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -108,13 +102,15 @@ public class MainActivity extends AppCompatActivity {
                 elevation * density, ((elevation + 1) * density) + 1
         ));**/
 
-
-
-
-
+        /** MediaStoreInterface **/
+        MediaStoreInterface msi = new MediaStoreInterface(this);
+        msi.clearFolder("folderName");
+        msi.createFolder("folderName");
+        msi.saveBitMapToFolderWithRandomNumericalName("folderName", bitmap);
+        String imagePath = msi.getLastImagePath();
+        msi.updateAndroidWithImagePath(imagePath, albumId);
+        msi.dumpCursor(albumId);
     }
-
-
 
     private List<Fragment> getFragments(ArrayList<SongObject> songObjectList,
                                         ArrayList<ArtistObject> artistObjectList,
@@ -189,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
         if (mCursor.moveToFirst()) {
 
             String var = mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
-            //DatabaseUtils.dumpCursor(mCursor);
+            DatabaseUtils.dumpCursor(mCursor);
             mCursor.close();
             return var;
         }

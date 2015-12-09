@@ -4,11 +4,15 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.UserDictionary;
+import android.renderscript.Sampler;
 import android.util.Log;
 
 import java.io.File;
@@ -16,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.util.Random;
 
@@ -30,6 +35,7 @@ public class SaveBitmapAndRecordUri {
     String dir;
     Context ctx;
     String albumID;
+    String fullPath;
 
     public SaveBitmapAndRecordUri(Bitmap bm, String url, Context ctx, String albumID) {
 
@@ -56,7 +62,7 @@ public class SaveBitmapAndRecordUri {
 
         // Here we make the directory
         String root = Environment.getExternalStorageDirectory().toString();
-        File myDir = new File(root + "/saved_images_musicplayer5");
+        File myDir = new File(root + "/musicplayer5");
         myDir.mkdirs();
 
         // Delete all previous files in directory if there were any (for development purposes)
@@ -70,6 +76,8 @@ public class SaveBitmapAndRecordUri {
         int n = 10000;
         n = generator.nextInt(n);
         String fileName = "Image-" + n + ".jpg";
+
+        fullPath = myDir + "/" + fileName;
 
         dir = fileName;
 
@@ -88,97 +96,49 @@ public class SaveBitmapAndRecordUri {
 
     private void RecordURI() {
 
-        /* wrong way */
 
+        /** Notes
+         *
+         * cursor dump from main activity get me this
+         * album_art=/storage/emulated/0/Android/data/com.android.providers.media/albumthumbs/1446001599761
+         *
+         * Log.v("tag","324dew"+ String.valueOf(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI));
+         * get me this content://media/external/audio/albums
+         *
+         *  Log.v("tag","324dew"+ String.valueOf(MediaStore.Audio.Albums.ALBUM_ART));
+         *  prints 324dewalbum_art
+        **/
+
+        /** Does Not Work
+        ContentResolver cr = ctx.getContentResolver();
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Audio.Albums.ALBUM_ART, path);
+        values.put(MediaStore.Audio.Albums.ALBUM_ART, albumID);
+        cr.update(MediaStore.Audio.Albums, values, null, null);
+        **/
 
-        // update(Uri uri, ContentValues values, String where, String[] selectionArgs)
-        int n = contentResolver.update(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                values,
-                MediaStore.Audio.Albums.ALBUM_ID + "=" + albumID,
-                null);
+        Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
+        ContentValues values = new ContentValues();
+        values.put("album_id", albumID);
+        values.put("_data", fullPath);
+        Uri newuri = ctx.getContentResolver().insert(sArtworkUri, values);
 
+        Log.v("TAG","!@ED#@D");
 
-        Log.e(TAG, "updateAlbumImage(" + path + ", " + albumID + "): " + n);
+        final Cursor mCursor = ctx.getContentResolver().query(
+                MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                new String[]{MediaStore.Audio.Albums.ALBUM_ART},
+                MediaStore.Audio.Albums._ID + "=?",
+                new String[]{albumID},
+                null
+        );
+        if (mCursor.moveToFirst()) {
 
-
-        /* right way */
-
-        ContentResolver res = ctx.getContentResolver();
-        // where uri points to the table (not the row) content values point to a ContentValues object ... http://stackoverflow.com/questions/12525395/contenturis-withappendedid-method-in-android-content-provider-can-i-leave-the-i
-        // so apparently sArtworkUri is the MediaStore.Audio.Albums.ALBUM_ART
-        // Since I changed only one record, a URI with an appended ID is sufficient.
-        // But if you want to update multiple values, you should use the normal URI and a selection clause."
-        Uri uri = ContentUris.withAppendedId(Uri.parse(MediaStore.Audio.Albums.ALBUM_ART), Integer.parseInt(albumID));
-        if (uri != null) {
-            InputStream in = null;
-            try {
-                in = res.openInputStream(uri); // Open a stream on to the content associated with a content URI.
-                return BitmapFactory.decodeStream(in, null, sBitmapOptions);
-            } catch (FileNotFoundException ex) {
-                // The album art thumbnail does not actually exist. Maybe the user deleted it, or
-                // maybe it never existed to begin with.
-                // Bitmap bm = getArtworkFromFile(ctx, null, albumID);
-                if (bm != null) {
-                    // Put the newly found artwork in the database.
-                    // Note that this shouldn't be done for the "unknown" album,
-                    // but if this method is called correctly, that won't happen.
-
-                    // first write it somewhere
-                    // String file = Environment.getExternalStorageDirectory() + "/albumthumbs/" + String.valueOf(System.currentTimeMillis());
-
-                    if (ensureFileExists(file)) {
-                        try {
-                            OutputStream outstream = new FileOutputStream(file);
-                            if (bm.getConfig() == null) {
-                                bm = bm.copy(Bitmap.Config.RGB_565, false);
-                                if (bm == null) {
-                                    return getDefaultArtwork(ctx);
-                                }
-                            }
-                            boolean success = bm.compress(Bitmap.CompressFormat.JPEG, 75, outstream);
-                            outstream.close();
-                            if (success) {
-                                ContentValues values = new ContentValues();
-                                values.put("album_id", albumID);
-                                values.put("_data", file);
-                                Uri newuri = res.insert(sArtworkUri, values);
-                                if (newuri == null) {
-                                    // Failed to insert in to the database. The most likely
-                                    // cause of this is that the item already existed in the
-                                    // database, and the most likely cause of that is that
-                                    // the album was scanned before, but the user deleted the
-                                    // album art from the sd card.
-                                    // We can ignore that case here, since the media provider
-                                    // will regenerate the album art for those entries when
-                                    // it detects this.
-                                    success = false;
-                                }
-                            }
-                            if (!success) {
-                                File f = new File(file);
-                                f.delete();
-                            }
-                        } catch (FileNotFoundException e) {
-                            Log.e(TAG, "error creating file", e);
-                        } catch (IOException e) {
-                            Log.e(TAG, "error creating file", e);
-                        }
-                    }
-                } else {
-                    bm = getDefaultArtwork(ctx);
-                }
-                return bm;
-            } finally {
-                try {
-                    if (in != null) {
-                        in.close();
-                    }
-                } catch (IOException ex) {
-                }
-            }
+            DatabaseUtils.dumpCursor(mCursor);
+            mCursor.close();
         }
-
+        else {
+            mCursor.close();
+        }
     }
+
 }

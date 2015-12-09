@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -128,9 +129,16 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         //if(songObject.albumArtURI != null){
 
         // If the albumArtURI exists, then Picasso will use it
+
         if(songObject.albumArtURI != null){
             // Picasso doesn't process URIs as strings, but as files
-            File f = new File(songObject.albumArtURI);
+            //File f = new File(songObject.albumArtURI);
+            //Uri uri = Uri.fromFile(f);
+
+            //File f = new File("/storage/emulated/0/Android/data/com.android.providers.media/albumthumbs/1446001605577");
+            File f = new File("/storage/emulated/0/musicplayer5/Image-5442.jpg");
+
+            Log.v("TAG","@EEF$GF string value of file f is "+String.valueOf(f));
             Picasso.with(viewHolder.albumArt.getContext())
                     .load(f)
                     .transform(new CircleTransform())
@@ -154,6 +162,7 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         // Eventually the images will downloaded, and when they are, I will call notifyDataSetChanged() to update the adapter.
         else {
 
+            Log.v("TAG","@EEFC$ albumArtURI is null "+String.valueOf(songObject.albumArtURI));
             // Here we will download and parse a JSON object from iTunes for an image URl (using Volley)
             // Then we will download the image (again using Volley)
             // Then will store the image (using a new thread)
@@ -197,7 +206,7 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
                         new Thread() {
                             public void run() {
                                 SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);
-                                sbmruri.run();
+                                //sbmruri.run();
 
                                 // So here I need to update the albumART URIs by (a) writing to the meta data and (b) updating the current song object URI
                                 // that way the URI is there on application restart, but also now so that Picasso has an image source to adapt to the list

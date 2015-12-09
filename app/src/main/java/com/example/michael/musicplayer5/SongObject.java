@@ -15,6 +15,7 @@ public class SongObject implements Parcelable{
     public String songDuration;
     public String albumURL;
     public String albumID;
+    //public String[] albumID;
 
     public SongObject(){
         super();
@@ -48,6 +49,8 @@ public class SongObject implements Parcelable{
         songDuration = in.readString();
         albumURL = in.readString();
         albumID = in.readString();
+        //albumID = in.createTypedArray(); // A newly created array containing objects with the same data as those that were previously written.
+                                         // http://developer.android.com/reference/android/os/Parcel.html#createTypedArray(android.os.Parcelable.Creator<T>)
 
     }
 
@@ -64,5 +67,6 @@ public class SongObject implements Parcelable{
         dest.writeString(songDuration);
         dest.writeString(albumURL);
         dest.writeString(albumID);
+        //dest.writeTypedArray(albumID);
     }
 }
