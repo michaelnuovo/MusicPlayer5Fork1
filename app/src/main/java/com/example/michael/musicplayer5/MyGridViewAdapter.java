@@ -107,7 +107,7 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
             Picasso.with(viewHolder.albumArt.getContext())
                     .load(f)
                     .transform(new CircleTransform())
-                    .placeholder(R.drawable.blackcircle)
+                    .placeholder(R.drawable.blackcircle).fit().centerCrop()
                     .into(viewHolder.albumArt);
         } else {
 

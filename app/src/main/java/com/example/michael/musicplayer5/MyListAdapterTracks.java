@@ -91,87 +91,47 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
             //viewHolder.albumArt = null; // Prevents recycling from overlapping list item contents
         }
 
-
-
         // Set view holder references
-
         //viewHolder.album = (TextView) convertView.findViewById(R.id.album);
         viewHolder.artist = (TextView) convertView.findViewById(R.id.artist);
         viewHolder.title = (TextView) convertView.findViewById(R.id.title);
         viewHolder.albumArt = (ImageView) convertView.findViewById(R.id.album_art);
         //viewHolder.duration = (TextView) convertView.findViewById(R.id.duration);
-
         // Reset the image so we don't get overlap from recycling
         viewHolder.albumArt.setBackgroundResource(R.drawable.blackcircle);
-
         // Set values to referenced view objects
-
         //viewHolder.album.setText(songObject.album);
         viewHolder.artist.setText(songObject.artist);
         viewHolder.title.setText(songObject.songTitle);
         //viewHolder.duration.setText(FormatTime(songObject.duration));
         //viewHolder.albumArt.setImageBitmap(BitmapFactory.decodeFile(songObject.albumArtURI));
-
         // Set a temporary gray background to the image view
-
         //viewHolder.albumArt.setBackgroundResource(R.drawable.grayalbumart);
-
         // Load album art asynchronously for smoother scrolling experience
-
         //new ImageLoader(viewHolder.albumArt).execute(songObject.albumArtURI);
-
         //Log.v("albumArtURI",String.valueOf(songObject.albumArtURI));
         //Log.v("artist",String.valueOf(songObject.artist));
-
-
-
         // If the album art uri exists, then use it
         //if(songObject.albumArtURI != null){
-
         // If the albumArtURI exists, then Picasso will use it
 
-        if(songObject.albumArtURI != null){
-            // Picasso doesn't process URIs as strings, but as files
-            //File f = new File(songObject.albumArtURI);
-            //Uri uri = Uri.fromFile(f);
-
-            //File f = new File("/storage/emulated/0/Android/data/com.android.providers.media/albumthumbs/1446001605577");
-            File f = new File("/storage/emulated/0/musicplayer5/Image-5442.jpg");
-
-            Log.v("TAG","@EEF$GF string value of file f is "+String.valueOf(f));
+        if(songObject.albumArtURI != null) {
+            File f = new File(songObject.albumArtURI);
             Picasso.with(viewHolder.albumArt.getContext())
                     .load(f)
                     .transform(new CircleTransform())
-                    .placeholder(R.drawable.blackcircle)
+                    .placeholder(R.drawable.blackcircle).fit().centerCrop()
                     .into(viewHolder.albumArt);
         }
 
-        /* If songObject doesn't have URI but it has a URL do this
-        else if(songObject.albumURL != null){
+        /*
+        else if(songObject.albumArtURI == null) { // Download the image
 
-            Picasso.with(viewHolder.albumArt.getContext())
-                    .load(songObject.albumURL)
-                    .transform(new CircleTransform())
-                    .placeholder(R.drawable.blackcircle)
-                    .into(viewHolder.albumArt);
-        } */
-
-        // If the albumArtURI does not exist, then the image must be downloaded before Picasso can use it,
-        // but I still have to call Picasso so it can keep track of which views are being recycled,
-        // so I just use the empty black circle, same as the placeholder image.
-        // Eventually the images will downloaded, and when they are, I will call notifyDataSetChanged() to update the adapter.
-        else {
-
-            Log.v("TAG","@EEFC$ albumArtURI is null "+String.valueOf(songObject.albumArtURI));
-            // Here we will download and parse a JSON object from iTunes for an image URl (using Volley)
-            // Then we will download the image (again using Volley)
-            // Then will store the image (using a new thread)
-            // Then Picasso will embed the image from storage to the list view (asynchronously)
-            String JSONURL = "https://itunes.apple.com/search?term=michael+jackson";
+            String JsonUrl = "https://itunes.apple.com/search?term=michael+jackson";
             getRequestQueue();
-            GsonRequest<SongInfo> myReq = new GsonRequest<SongInfo>(
+            GsonRequest<SongInfo> myReq = new GsonRequest<>(
                     Request.Method.GET,
-                    JSONURL,
+                    JsonUrl,
                     SongInfo.class,
                     null,
                     createMyReqSuccessListener(songObject, viewHolder),
@@ -183,7 +143,7 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
                     .transform(new CircleTransform())
                     .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);
-        }
+        }*/
 
         return convertView;
     }
@@ -205,8 +165,18 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
                         // This operation will need a new thread so Picasso and the read of the UI thread can continue adapting list elements without interruption
                         new Thread() {
                             public void run() {
-                                SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);
+                                //SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);
                                 //sbmruri.run();
+
+                                /** MediaStoreInterface
+                                String folderName = "MusicPlayer5";
+                                MediaStoreInterface msi = new MediaStoreInterface(context);
+                                msi.clearFolder(folderName);
+                                msi.createFolder(folderName);
+                                msi.saveBitMapToFolderWithRandomNumericalName(folderName, response);
+                                String imagePath = msi.getLastImagePath();
+                                msi.updateAndroidWithImagePath(imagePath, songObject.albumID);
+                                msi.dumpCursor(songObject.albumID);**/
 
                                 // So here I need to update the albumART URIs by (a) writing to the meta data and (b) updating the current song object URI
                                 // that way the URI is there on application restart, but also now so that Picasso has an image source to adapt to the list

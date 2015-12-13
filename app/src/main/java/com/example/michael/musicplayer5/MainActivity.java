@@ -3,7 +3,6 @@ package com.example.michael.musicplayer5;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -12,6 +11,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,9 +29,9 @@ public class MainActivity extends AppCompatActivity {
     //testing
 
     static ArrayList<SongObject> mainList = null; // we need this variables to be global so that it can be referenced from other activities
-    private static Context mContext;
+    private static Context ctx;
     public static Context getAppContext() {
-        return mContext;
+        return ctx;
     }
 
     @Override
@@ -49,21 +49,26 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mContext = getApplicationContext();
+        /** Set global context variable **/
+        ctx = getApplicationContext();
 
         /** Make song object list, album object list, and artist object list **/
         ArrayList<SongObject> songObjectList = new ArrayList<>();
         ArrayList<SongObject> songObjectList_shuffled = new ArrayList<>();
         ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
         ArrayList<ArtistObject> artistObjectList = new ArrayList<>();
-        mainList = songObjectList;
-        StaticMusicPlayer.setList(mainList);
+        //mainList = songObjectList;
+        //StaticMusicPlayer.setList(mainList);
 
         /** Populate lists **/
         scanMedia();
         Cursor songListCursor = GetSongListCursor();
         MakeLists(songListCursor, songObjectList, songObjectList_shuffled, albumObjectList, artistObjectList);
         Collections.shuffle(songObjectList_shuffled);
+
+        /** Dump albumn columns **/
+        //MediaStoreInterface mint = new MediaStoreInterface(ctx);
+        //mint.dumpAlbumColumns();
 
         /** Initialize static music player **/
         StaticMusicPlayer.setList(songObjectList);
@@ -101,52 +106,31 @@ public class MainActivity extends AppCompatActivity {
                 getResources(), Color.BLACK, 0,
                 elevation * density, ((elevation + 1) * density) + 1
         ));**/
-
-        /** MediaStoreInterface **/
-        MediaStoreInterface msi = new MediaStoreInterface(this);
-        msi.clearFolder("folderName");
-        msi.createFolder("folderName");
-        msi.saveBitMapToFolderWithRandomNumericalName("folderName", bitmap);
-        String imagePath = msi.getLastImagePath();
-        msi.updateAndroidWithImagePath(imagePath, albumId);
-        msi.dumpCursor(albumId);
     }
 
     private List<Fragment> getFragments(ArrayList<SongObject> songObjectList,
                                         ArrayList<ArtistObject> artistObjectList,
                                         ArrayList<AlbumObject> albumObjectList) {
-
-
         // An empty array list
         List<Fragment> fList = new ArrayList<Fragment>();
-
         // Initialize and add fragment objects to the array list
-
         fList.add(MyFragmentTracks.newInstance(songObjectList));
         fList.add(MyFragmentTracks.newInstance(songObjectList));
         fList.add(MyFragmentTracks.newInstance(songObjectList));
         fList.add(MyFragmentTracks.newInstance(songObjectList));  // 3 - TRACKS
         fList.add(MyFragmentArtists.newInstance(artistObjectList)); // 4 - ARTISTS
-
-
-
         fList.add(MyFragmentAlbums.newInstance(albumObjectList));
         fList.add(MyFragmentTracks.newInstance(songObjectList));
-
         // Return the fragment object array list for adaption to the pager view
         return fList;
     }
 
     public void mainFooterListener(final ArrayList<SongObject> songObjectList){
-
         LinearLayout mainFooter = (LinearLayout) findViewById(R.id.activity_main_footer);
-
         mainFooter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 // Open the play panel
-
                 Intent intent = new Intent(MainActivity.this, PlayPanelActivity.class);
                 //intent.putExtra("songObjectList", songObjectList); //Optional parameters
                 MainActivity.this.startActivity(intent);
@@ -165,13 +149,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void scanMedia(){
-
         File file = new File(Environment.getExternalStorageDirectory() + "/Music");
         new SingleMediaScanner(this, file);
     }
 
     private String GetAlbumArtURI(String[] albumID) {
-
         final Cursor mCursor = getContentResolver().query(
                 MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
                 new String[]{MediaStore.Audio.Albums.ALBUM_ART},
@@ -179,15 +161,12 @@ public class MainActivity extends AppCompatActivity {
                 albumID,
                 null
         );
-
-
-
         if (mCursor.moveToFirst()) {
 
-            String var = mCursor.getString(mCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
-            DatabaseUtils.dumpCursor(mCursor);
+            //DatabaseUtils.dumpCursor(mCursor);
+            String str = mCursor.getString(0);
             mCursor.close();
-            return var;
+            return str;
         }
         else {
             mCursor.close();
@@ -196,11 +175,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     private Cursor GetSongListCursor() {
-
-        // Set getContentResolver().query(contentURI, projection, selection, null, order) arguments
-
         Uri contentURI = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {
                 MediaStore.Audio.Media.ALBUM,
@@ -211,128 +186,65 @@ public class MainActivity extends AppCompatActivity {
                 MediaStore.Audio.Media.ALBUM_ID};
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
         String order = MediaStore.Audio.Media.TITLE + " ASC";
-
-        // Uri maps to the table in the provider named table_name.
-        // projection is an array of columns that should be included for each row retrieved.
-        // selection specifies the criteria for selecting rows.
-        // selectionArgs is null
-        // sortOrder specifies the order in which rows appear in the returned Cursor.
-
-        // Initialize a local cursor object with a query and return the cursor object
         final Cursor mCursor = getContentResolver().query(contentURI, projection, selection, null, order);// Run getContentResolver query
         //DatabaseUtils.dumpCursor(mCursor);
         return mCursor;
     }
 
-
-
+    // This method constructs our song objects and adds them to song object list and shuffled song object list
+    // This method also constructs the album object and artist object and respective lists
     private void MakeLists(Cursor mCursor,
                            ArrayList<SongObject> songObjectList,
                            ArrayList<SongObject> songObjectList_shuffled,
                            ArrayList<AlbumObject> albumObjectList,
                            ArrayList<ArtistObject> artistObjectList) {
-
         try{
-
             if (mCursor.moveToFirst()) {
-
                 do {
-
-
-
-                    // Initialize songObject
                     final SongObject songObject = new SongObject();
 
+                    /** Making the song objects and adding them to the lists **/
+
+                    // define artist property
+                    String artist = mCursor.getString(1);
+                    if (artist.equals("<unknown>")) {artist = "Unknown Artist"; songObject.artist = artist;}
+                    else {artist = mCursor.getString(1);songObject.artist = artist;}
+
+                    // define title, duration, path, albumId, title properties
+                    String albumTitle = mCursor.getString(0);
+                    songObject.albumTitle = albumTitle;
                     String songTitle = mCursor.getString(2);
                     songObject.songTitle = songTitle;
-
                     String songPath = mCursor.getString(3);
                     songObject.songPath = songPath;
-
                     String songDuration = mCursor.getString(4);
                     songObject.songDuration = songDuration;
 
-                    // Add albumURI
+                    // define albumId property
                     String[] albumID = {mCursor.getString(5)};
-                    songObject.albumArtURI = GetAlbumArtURI(albumID);
-
-                    // Add albumId
                     songObject.albumID = albumID[0];
 
-                    //Log.v("TAG","URI is "+String.valueOf(songObject.albumArtURI));
-
-                    if(songObject.albumArtURI != null){
-
-                        // The URI exists, so we leave as is
-
-                    } else {
-
-                        // do nothing
-                        // null albumArtURI will be handled by Picasso and Volley in the adapter classes
-                    }
-
-                    /* else { // search folder for image file e.g. a jpg
-                        String dirPath = songObject.songPath;
-                        dirPath = dirPath.substring(0,dirPath.lastIndexOf('/'));
-                        File mFile = new File(dirPath);
-
-                        File[] mFiles = mFile.listFiles();
-
-                        for(File aFile : mFiles){
-
-                            if(IsImage.test(aFile) == true){
-
-                                // Get the absolute path of the file if its an image
-                                songObject.albumArtURI = aFile.getAbsolutePath();
-
-                                break;
-
-                            } else {
-                                //get some other image
-
-                                //songObject.albumArtURI = String.valueOf(Uri.parse("android.resource://"+PACKAGE_NAME+"/" + R.drawable.mdefault));
-
-                                // data/data/yourapp/app_data/imageDir
+                    // define albumArtUri property
+                    songObject.albumArtURI = GetAlbumArtURI(albumID);
 
 
+                    if(songObject.albumArtURI.contains("myalbumart")) {
 
+                        AlbumArtLogic albumArtLogic = new AlbumArtLogic(Long.parseLong(songObject.albumID), ctx, albumTitle);
+                        String jsonObjectArrayUrl = Parse.jsonTrackInfoArraySearchUrl(artist);
 
-                                //Bitmap bm = BitmapFactory.decodeResource(this.getResources(), R.drawable.mdefault);
-                                //ImageUtil.saveToInternalSorage(this, "imageDir", "defaultImage", bm);
-                                //String PACKAGE_NAME = getApplicationContext().getPackageName();
-                                //songObject.albumArtURI = "data/data/"+PACKAGE_NAME+"/app_data/" + "imageDir";
-
-
-
-
-
-                            }
-                        }
-                    }*/
-
-                    // add albumTitle
-                    String albumTitle = mCursor.getString(0);
-                    songObject.albumTitle = albumTitle;
-
-                    // Add artist or add "Unknown Artist"
-                    String artist = mCursor.getString(1);
-                    if (artist.equals("<unknown>")) {
-
-                        artist = "Unknown Artist";
-                        songObject.artist = artist;
-                    }
-                    else {
-
-                        artist = mCursor.getString(1);
-                        songObject.artist = artist;
+                        albumArtLogic.makeRequest(jsonObjectArrayUrl);
                     }
 
 
+                    // add song object to lists
                     songObjectList.add(songObject);
                     songObjectList_shuffled.add(songObject);
 
                     String albumArtist = songObject.artist; // can an album have more than one artist? yes...
                     String albumArtURI = songObject.albumArtURI;
+
+                    /** Making the album object and adding it to the list **/
 
                     // if albumObjectList is empty, add a new album object
                     // then check if there is an albumObject in the list where albumObject.albumTitle = songObject.albumTitle
@@ -362,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
-                    // Do the same thing for the artistObjectList
+                    /** Making the artist object and adding it to the list **/
 
                     if(artistObjectList.isEmpty()){
                         artistObjectList.add(new ArtistObject(songObject));
@@ -376,9 +288,7 @@ public class MainActivity extends AppCompatActivity {
                                 artistObjectList.get(i).artistTrackCount += 1;
 
                                 bool = true;
-
                             }
-
                         }
 
                         if(bool == false){
@@ -387,23 +297,12 @@ public class MainActivity extends AppCompatActivity {
                             artistObjectList.add(newArtistObject);
                         }
                     }
-
-
-
                 } while (mCursor.moveToNext());
             }
-
         } finally {
-
-            // Find unique number of instancse of albums
-            //artistObjectList.setAlbumsCounter();
-
-            // Close cursor
             mCursor.close();
-
         }
     }
-
 
     /**
      private void SetBackground(){

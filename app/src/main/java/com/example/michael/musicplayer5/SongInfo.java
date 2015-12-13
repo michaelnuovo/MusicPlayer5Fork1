@@ -5,6 +5,10 @@ import java.util.List;
 /**
  * Created by michael on 11/29/15.
  */
+
+// https://www.apple.com/itunes/affiliates/resources/documentation/itunes-store-web-service-search-api.html
+
+
 public class SongInfo {
 
     public int resultCount;

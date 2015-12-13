@@ -49,7 +49,7 @@ public class SaveBitmapAndRecordUri {
 
         // So let's test the code and see if we can save the bitmaps to a file on the SD card
         SaveImage(bm);
-        RecordURI();
+
 
     }
 
@@ -93,52 +93,4 @@ public class SaveBitmapAndRecordUri {
             e.printStackTrace();
         }
     }
-
-    private void RecordURI() {
-
-
-        /** Notes
-         *
-         * cursor dump from main activity get me this
-         * album_art=/storage/emulated/0/Android/data/com.android.providers.media/albumthumbs/1446001599761
-         *
-         * Log.v("tag","324dew"+ String.valueOf(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI));
-         * get me this content://media/external/audio/albums
-         *
-         *  Log.v("tag","324dew"+ String.valueOf(MediaStore.Audio.Albums.ALBUM_ART));
-         *  prints 324dewalbum_art
-        **/
-
-        /** Does Not Work
-        ContentResolver cr = ctx.getContentResolver();
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Audio.Albums.ALBUM_ART, albumID);
-        cr.update(MediaStore.Audio.Albums, values, null, null);
-        **/
-
-        Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
-        ContentValues values = new ContentValues();
-        values.put("album_id", albumID);
-        values.put("_data", fullPath);
-        Uri newuri = ctx.getContentResolver().insert(sArtworkUri, values);
-
-        Log.v("TAG","!@ED#@D");
-
-        final Cursor mCursor = ctx.getContentResolver().query(
-                MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Audio.Albums.ALBUM_ART},
-                MediaStore.Audio.Albums._ID + "=?",
-                new String[]{albumID},
-                null
-        );
-        if (mCursor.moveToFirst()) {
-
-            DatabaseUtils.dumpCursor(mCursor);
-            mCursor.close();
-        }
-        else {
-            mCursor.close();
-        }
-    }
-
 }
