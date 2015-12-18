@@ -11,7 +11,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -228,12 +227,13 @@ public class MainActivity extends AppCompatActivity {
                     songObject.albumArtURI = GetAlbumArtURI(albumID);
 
 
-                    if(songObject.albumArtURI.contains("myalbumart")) {
+                    if(null!=songObject.albumArtURI &&
+                            songObject.albumArtURI.contains("myalbumart")) {
 
-                        AlbumArtLogic albumArtLogic = new AlbumArtLogic(Long.parseLong(songObject.albumID), ctx, albumTitle);
-                        String jsonObjectArrayUrl = Parse.jsonTrackInfoArraySearchUrl(artist);
-
-                        albumArtLogic.makeRequest(jsonObjectArrayUrl);
+                        Itunes albumArtLogic = new Itunes(Long.parseLong(songObject.albumID), ctx, albumTitle, artist);
+                        String jsonUrl = Parse.iTunesUrl(artist);
+                        //String jsonUrl = Parse.spotifyUrl(artist, albumTitle);
+                        albumArtLogic.makeRequest(jsonUrl);
                     }
 
 

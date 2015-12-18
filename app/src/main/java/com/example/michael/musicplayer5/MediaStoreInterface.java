@@ -148,7 +148,7 @@ public class MediaStoreInterface {
         ctx.getContentResolver().insert(albumArtUri, insertionValues);
 
         /** Print results **/
-        dumpCursorByAlbumId(albumId.toString());
+        //dumpCursorByAlbumId(albumId.toString());
     }
 
     public void dumpCursorByAlbumId(String id){
