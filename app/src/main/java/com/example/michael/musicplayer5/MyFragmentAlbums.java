@@ -39,7 +39,7 @@ public class MyFragmentAlbums extends Fragment {
         MyGridViewAdapter gridAdapter = new MyGridViewAdapter(getActivity(), R.layout.item_grid_view, albumObjectList);
         gridView.setAdapter(gridAdapter);
 
-
+        UpdateAdapters.getInstance().setAdapterThree(gridAdapter);
 
         return rootView;
     }

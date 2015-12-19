@@ -39,6 +39,8 @@ public class MyFragmentArtists extends Fragment {
         MyListAdapterArtists adapter = new MyListAdapterArtists(getActivity(), R.layout.item_list_view_artists, artistObjectList);
         listView.setAdapter(adapter);
 
+        UpdateAdapters.getInstance().setAdapterTwo(adapter);
+
 
         return rootView;
     }

@@ -25,12 +25,12 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 //Base64 does not exists in android API http://stackoverflow.com/questions/28426700/android-java-lang-nosuchmethoderror-org-apache-commons-codec-binary-base64-en
-//import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64;
 //use this import instead and change
 //String retVal = Base64.encodeBase64String(digest);
 //to
 //String retVal = Base64.encodeToString(digest, Base64.DEFAULT);
-import android.util.Base64;
+//import android.util.Base64;
 
 public class SignedRequestsHelper {
     private static final String UTF8_CHARSET = "UTF-8";
@@ -93,9 +93,9 @@ public class SignedRequestsHelper {
         try {
             data = stringToSign.getBytes(UTF8_CHARSET);
             rawHmac = mac.doFinal(data);
-            //Base64 encoder = new Base64();
-            //signature = new String(encoder.encode(rawHmac));
-            signature = new String(Base64.encode(data, 0));
+            Base64 encoder = new Base64();
+            signature = new String(encoder.encode(rawHmac));
+            //signature = new String(Base64.encode(rawHmac,Base64.NO_WRAP));
 
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(UTF8_CHARSET + " is unsupported!", e);

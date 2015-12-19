@@ -1,15 +1,14 @@
 package com.example.michael.musicplayer5;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
-import com.android.volley.toolbox.Volley;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,14 +23,18 @@ public class Spotify {
     Context ctx;
     String albumTitle;
     String artist;
+    Activity activity;
+    SongObject songObject;
 
     /** Constructor **/
-    public Spotify(Long albumId, Context ctx, String albumTitle, String artist)
+    public Spotify(SongObject songObject, Long albumId, Context ctx, String albumTitle, String artist, Activity activity)
     {
         this.albumId = albumId;
         this.ctx = ctx;
         this.albumTitle = albumTitle;
         this.artist = artist;
+        this.activity = activity;
+        this.songObject = songObject;
     }
 
     /** Make a Json request **/
@@ -92,6 +95,10 @@ public class Spotify {
                 /** Amazon **/
                 if(null != imageUrl){
 
+                    Log.v("TAG","Json not on spotify, try xml on to amazon");
+                    Log.v("TAG","Json url is "+jsonUrl);
+                    Log.v("TAG","Album is "+albumTitle);
+
                     //Get xml url
                     SignedRequestsHelper helper = new SignedRequestsHelper();
                     Map<String, String> values = new HashMap<String, String>();
@@ -130,9 +137,19 @@ public class Spotify {
                                     MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
                                     mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(albumId, imagePathData);
 
+                                    //update uri path
+                                    songObject.albumArtURI = imagePathData;
+
                                     // Update all adapters (not yet implemented)
-                                    Adapters adapter = new Adapters();
-                                    adapter.updateAll();
+                                    Log.v("TAG","value of activity is "+activity);
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+
+                                            UpdateAdapters.getInstance().update();
+
+                                        }
+                                    });
 
 
                                     //SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);

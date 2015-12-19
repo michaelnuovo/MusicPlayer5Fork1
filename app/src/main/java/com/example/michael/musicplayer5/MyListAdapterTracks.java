@@ -48,6 +48,7 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         return mRequestQueue;
     }
 
+
     public MyListAdapterTracks(Context context, int layoutResourceId, ArrayList<SongObject> songObjectList, Activity activity) {
 
         super(context, layoutResourceId, songObjectList);

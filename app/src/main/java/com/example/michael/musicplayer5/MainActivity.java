@@ -1,5 +1,6 @@
 package com.example.michael.musicplayer5;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -11,6 +12,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     public static Context getAppContext() {
         return ctx;
     }
+    private Activity activity;
 
     @Override
     public void onResume(){
@@ -48,8 +51,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /** Set global context variable **/
+        /** Set global context variables **/
         ctx = getApplicationContext();
+        activity = this;
 
         /** Make song object list, album object list, and artist object list **/
         ArrayList<SongObject> songObjectList = new ArrayList<>();
@@ -59,15 +63,19 @@ public class MainActivity extends AppCompatActivity {
         //mainList = songObjectList;
         //StaticMusicPlayer.setList(mainList);
 
+        /** Overrite data paths **/
+        MediaStoreInterface mint = new MediaStoreInterface(ctx);
+        //mint.dumpAlbumColumns();
+        mint.setAllAlbumDataToX();
+
         /** Populate lists **/
         scanMedia();
         Cursor songListCursor = GetSongListCursor();
         MakeLists(songListCursor, songObjectList, songObjectList_shuffled, albumObjectList, artistObjectList);
         Collections.shuffle(songObjectList_shuffled);
 
-        /** Dump albumn columns **/
-        //MediaStoreInterface mint = new MediaStoreInterface(ctx);
-        //mint.dumpAlbumColumns();
+        /**  Logs **/
+        //Log.v("TAG","value of activity is "+activity);
 
         /** Initialize static music player **/
         StaticMusicPlayer.setList(songObjectList);
@@ -227,15 +235,28 @@ public class MainActivity extends AppCompatActivity {
                     songObject.albumArtURI = GetAlbumArtURI(albumID);
 
 
-                    if(null!=songObject.albumArtURI &&
-                            songObject.albumArtURI.contains("myalbumart")) {
+                    /**
+                    if(songObject.albumArtURI.contains("myalbumart") || songObject.albumArtURI.contains("0") ) {
+
+                        MediaStoreInterface updatePath = new MediaStoreInterface(ctx);
+                        updatePath.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(albumID[0]),"1"); //So we only do one album at a time
 
                         Itunes albumArtLogic = new Itunes(Long.parseLong(songObject.albumID), ctx, albumTitle, artist);
                         String jsonUrl = Parse.iTunesUrl(artist);
                         //String jsonUrl = Parse.spotifyUrl(artist, albumTitle);
                         albumArtLogic.makeRequest(jsonUrl);
-                    }
+                    }**/
 
+                    /****/
+                    //Log.v("TAG","album art uri is "+songObject.albumArtURI);
+                    if(songObject.albumArtURI.equals("X")){ //If the data is an empty string
+                        MediaStoreInterface updatePath = new MediaStoreInterface(ctx);
+                        updatePath.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(albumID[0]),"Y"); //So we only do one album at a time
+                        Itunes albumArtLogic = new Itunes(songObject, songObject.albumArtURI, Long.parseLong(songObject.albumID), ctx, albumTitle, artist, activity);
+                        String jsonUrl = Parse.iTunesUrl(artist);
+                        //String jsonUrl = Parse.spotifyUrl(artist, albumTitle);
+                        albumArtLogic.makeRequest(jsonUrl);
+                    }
 
                     // add song object to lists
                     songObjectList.add(songObject);

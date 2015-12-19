@@ -1,5 +1,6 @@
 package com.example.michael.musicplayer5;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -28,14 +29,20 @@ public class Itunes {
     Context ctx;
     String albumTitle;
     String artist;
+    Activity activity;
+    String albumArtUri;
+    SongObject songObject;
 
     /** Constructor **/
-    public Itunes(Long albumId, Context ctx, String albumTitle, String artist)
+    public Itunes(SongObject songObject, String albumArtURI, Long albumId, Context ctx, String albumTitle, String artist, Activity activity)
     {
+        this.songObject = songObject;
+        this.albumArtUri = albumArtURI;
         this.albumId = albumId;
         this.ctx = ctx;
         this.albumTitle = albumTitle;
         this.artist = artist;
+        this.activity = activity;
     }
 
     /** Make a Json request **/
@@ -97,7 +104,7 @@ public class Itunes {
                                 response.results.get(i).collectionName.contains(albumTitle)){  // for .contains() method not to throw an error
                             imageUrl = response.results.get(i).artworkUrl60;
                             Log.v("TAG","Yes it does exist on iTunes. ");
-                            Log.v("TAG","The image url is "+imageUrl);
+                            Log.v("TAG", "The image url is " + imageUrl);
                             break;
                         }
                         if(i==response.results.size()-1){
@@ -119,7 +126,7 @@ public class Itunes {
                 /** Try Spotify if image url is null **/
                 if(null == imageUrl){
                     Parse parse = new Parse();
-                    Spotify spotify = new Spotify(albumId, ctx, albumTitle, artist);
+                    Spotify spotify = new Spotify(songObject, albumId, ctx, albumTitle, artist, activity);
                     spotify.makeRequest(parse.spotifyUrl(artist,albumTitle));
                 }
 
@@ -145,9 +152,19 @@ public class Itunes {
                                     MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
                                     mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(albumId, imagePathData);
 
+                                    //Update uri path
+                                    songObject.albumArtURI = imagePathData;
+
                                     // Update all adapters (not yet implemented)
-                                    Adapters adapter = new Adapters();
-                                    adapter.updateAll();
+                                    Log.v("TAG","value of activity is "+activity);
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+
+                                            UpdateAdapters.getInstance().update();
+
+                                        }
+                                    });
 
 
                                     //SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);

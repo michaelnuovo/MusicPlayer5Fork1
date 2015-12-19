@@ -151,6 +151,24 @@ public class MediaStoreInterface {
         //dumpCursorByAlbumId(albumId.toString());
     }
 
+    public void setAllAlbumDataToX(){
+        for(int i=0;i<300;i++){
+
+            Long albumId = (long) i;
+
+            /** Deletion **/
+            Uri albumArtUri = Uri.parse("content://media/external/audio/albumart");
+            ctx.getContentResolver().delete(ContentUris.withAppendedId(albumArtUri, albumId), null, null);
+
+            /** Insertion **/
+            ContentValues insertionValues = new ContentValues();
+            insertionValues.put("_data", "X");
+            insertionValues.put("album_id", albumId);
+            ctx.getContentResolver().insert(albumArtUri, insertionValues);
+
+        }
+    }
+
     public void dumpCursorByAlbumId(String id){
         String[] stringArray = {id};
         final Cursor mCursor = ctx.getContentResolver().query(

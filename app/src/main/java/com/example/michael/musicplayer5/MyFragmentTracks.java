@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,7 +43,7 @@ public class MyFragmentTracks extends Fragment implements MyInterface {
 
     }
 
-    Application app;
+    //Application app;
 
 
 
@@ -80,6 +81,8 @@ public class MyFragmentTracks extends Fragment implements MyInterface {
 
         adapter = new MyListAdapterTracks(getActivity(), R.layout.item_list_view, songList, getActivity());
         listView.setAdapter(adapter);
+
+        UpdateAdapters.getInstance().setAdapterOne(adapter);
 
 
 
