@@ -1,5 +1,6 @@
 package com.example.michael.musicplayer5;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -36,15 +37,19 @@ public class Amazon {
     Context ctx;
     String albumTitle;
     String artist;
+    SongObject songObject;
     //public static RequestQueue mRequestQueue;
+    Activity activity;
 
     /** Constructor **/
-    public Amazon(Long albumId, Context ctx, String albumTitle, String artist)
+    public Amazon(Long albumId, Context ctx, String albumTitle, String artist, SongObject songObject, Activity activity)
     {
         this.albumId = albumId;
         this.ctx = ctx;
         this.albumTitle = albumTitle;
         this.artist = artist;
+        this.songObject = songObject;
+        this.activity = activity;
     }
 
     /** Static request queue (we don't want multiple request queue objects)
@@ -55,14 +60,26 @@ public class Amazon {
         return mRequestQueue;
     }**/
 
+    /** custom error response listener **/
+    private Response.ErrorListener createMyReqErrorListener(final String url) {
+        return new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // Do whatever you want to do with error.getMessage();
+                Log.v("TAG", "Bad url is: " + String.valueOf(url));
+            }
+        };
+    }
+
     /** Make a Json request **/
-    public void makeRequest(String url){
+
+    public void makeRequest(final String url){
 
         Itunes.getRequestQueue();
         //getRequestQueue();
 
-        Log.v("TAG","Submitting request to Amazon at: "+url);
-        Log.v("TAG","Album title is: "+albumTitle);
+        //Log.v("TAG","Submitting request to Amazon at: "+url);
+        //Log.v("TAG","Album title is: "+albumTitle);
 
         //url = "http://webservices.amazon.com/onca/xml?AWSAccessKeyId=AKIAJ6L6R4KOPIYIUXUA&Artist=Bill%20Evans%20Trio&AssociateTag=mytag-20&Operation=ItemSearch&SearchIndex=Music&Timestamp=2015-12-18T07%3A03%3A45Z&Title=Sunday%20At%20the%20Village%20Vanguard&Signature=uB0u82l7gdu6n3ICnqfepYC5tu6hj7YHdyN%2FbKGHUFk%3D";
 
@@ -73,12 +90,63 @@ public class Amazon {
                     @Override
                     public void onResponse(String response) {
 
-                        Log.v("TAG","Response is : "+response);
-                        Log.v("TAG","Album title from response is: "+albumTitle);
+                        //Log.v("TAG","Response is : "+response);
+                        //Log.v("TAG","Album title from response is: "+albumTitle);
 
                         //so we need to parse the response
 
-                        String asid = getAsid(response);
+                        final String value = parseXml(response);
+                        Log.v("TAG","parsed value is: "+value);
+                        Log.v("TAG","Album is: "+albumTitle);
+                        Log.v("TAG","Artist is: "+artist);
+                        Log.v("TAG","Xm url is: "+url);
+
+                        final String imageUrl = "http://images.amazon.com/images/P/" + value + ".01._SCLZZZZZZZ_.jpg";
+
+
+
+                        ImageRequest myImageReq = new ImageRequest(imageUrl, new Response.Listener<Bitmap>() {
+                            @Override
+
+                            /** Image request onResponse method **/
+                            public void onResponse(final Bitmap response) {
+
+                                new Thread() {
+                                    public void run() {
+
+
+                                        Log.v("TAG","the amazon album title is: "+albumTitle);
+                                        Log.v("TAG","the xml url is: "+url);
+                                        Log.v("TAG","the image url is: "+imageUrl);
+
+                                        // Save the bitmap to disk, return an image path
+                                        SaveBitMapToDisk saveImage = new SaveBitMapToDisk();
+                                        saveImage.SaveImage(response, "myalbumart");
+                                        String imagePathData = saveImage.getImagePath();
+
+                                        // Update the image path to Android meta data
+                                        MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
+                                        mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(albumId, imagePathData);
+
+                                        //update uri path
+                                        songObject.albumArtURI = imagePathData;
+
+                                        // Update all adapters (not yet implemented)
+                                        Log.v("TAG","value of activity is "+activity);
+                                        activity.runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+
+                                                UpdateAdapters.getInstance().update();
+
+                                            }
+                                        });
+                                    }
+                                }.start();
+                            }
+                        }, 0, 0, null, createMyReqErrorListener(imageUrl));
+
+                        Itunes.mRequestQueue.add(myImageReq);
 
                     }
                 },
@@ -106,21 +174,24 @@ public class Amazon {
         return "test run id";
     }
 
-    public String getAsid(String response){
+    public String parseXml(String response){
 
-        //Parse response for a single node value
         DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
         try {
+
             DocumentBuilder builder = domFactory.newDocumentBuilder();
-            //Document dDoc = builder.parse("E:/test.xml");
             Document dDoc = builder.parse(new InputSource(new StringReader(response)));
+
             XPath xPath = XPathFactory.newInstance().newXPath();
-            Node node = (Node) xPath.evaluate("ItemSearchResponse/Items/Item/ASIN", dDoc, XPathConstants.NODE);
-            Log.v("TAG","node value is: "+node.getNodeValue());
-            return node.getNodeValue();
+            //Node node = (Node) xPath.evaluate("/Items/Item/ASIN", dDoc, XPathConstants.NODE);
+            //System.out.println(node.getNodeValue());
+            String value = xPath.evaluate("/ItemSearchResponse/Items/Item/ASIN", dDoc);
+            return value;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("MYAPP", "exception", e);
             return null;
         }
     }
+
+
 }

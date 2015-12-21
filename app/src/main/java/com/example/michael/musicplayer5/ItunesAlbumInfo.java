@@ -8,7 +8,7 @@ import java.util.List;
 
 // https://itunes.apple.com/search?term=michael+jackson&entity=album
 
-public class AlbumInfo {
+public class ItunesAlbumInfo {
 
     public int resultCount;
     public List<Result> results;

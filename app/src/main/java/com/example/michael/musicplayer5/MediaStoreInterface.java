@@ -40,11 +40,23 @@ public class MediaStoreInterface {
     }
 
     public void clearFolder(String folderName){
-        String root = Environment.getExternalStorageDirectory().toString();
-        File directoryPath = new File(root + folderName);
-        String[] children = directoryPath.list();
-        for (int i = 0; i < children.length; i++) {
-            new File(directoryPath, children[i]).delete();
+
+        String root = String.valueOf(Environment.getExternalStorageDirectory());
+        Log.v("TAG","Environment.getExternalStorageDirectory().toString() is"+Environment.getExternalStorageDirectory().toString());
+        Log.v("TAG","Environment.getExternalStorageDirectory().getAbsolutePath() is"+Environment.getExternalStorageDirectory().getAbsolutePath());
+        Log.v("TAG","String.valueOf(Environment.getExternalStorageDirectory())"+String.valueOf(Environment.getExternalStorageDirectory()));
+
+        File mFile = new File(root + "/" + folderName);
+        String[] files = mFile.list();
+        if(null != files){
+            for (int i = 0; i < files.length; i++) {
+                File myFile = new File(mFile, files[i]);
+                Log.v("TAG","Deleting file "+mFile);
+                myFile.delete();
+            }
+        } else {
+            Log.v("TAG","files array is null ");
+            Log.v("TAG","file path should be "+root+folderName);
         }
     }
 
@@ -208,7 +220,7 @@ public class MediaStoreInterface {
                 new String[]{                                 // String[] projection (columns)
                         android.provider.MediaStore.Audio.Albums._ID,
                         android.provider.MediaStore.Audio.Albums.ALBUM_ART,
-                        android.provider.MediaStore.Audio.Albums.ARTIST,
+                        MediaStore.Audio.Albums.ALBUM,
                         android.provider.MediaStore.Audio.Albums.ARTIST,
                         android.provider.MediaStore.Audio.Albums.NUMBER_OF_SONGS,
                         android.provider.MediaStore.Audio.Albums.ALBUM_KEY

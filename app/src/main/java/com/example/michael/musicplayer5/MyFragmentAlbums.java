@@ -2,6 +2,7 @@ package com.example.michael.musicplayer5;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,8 @@ public class MyFragmentAlbums extends Fragment {
 
         MyGridViewAdapter gridAdapter = new MyGridViewAdapter(getActivity(), R.layout.item_grid_view, albumObjectList);
         gridView.setAdapter(gridAdapter);
+
+        Log.v("TAG","gridAdapter value is "+String.valueOf(gridAdapter));
 
         UpdateAdapters.getInstance().setAdapterThree(gridAdapter);
 

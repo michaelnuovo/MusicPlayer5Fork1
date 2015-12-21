@@ -10,54 +10,61 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 /**
- * Created by michael on 12/15/15.
+ * Created by michael on 12/20/15.
  */
-public class Spotify {
+public class SpotifySolo {
 
-    Long albumId;
-    //private static RequestQueue mRequestQueue;
     Context ctx;
-    String albumTitle;
-    String artist;
     Activity activity;
-    SongObject songObject;
+    ArrayList<SongObject> requestList;
 
-    /** Constructor **/
-    public Spotify(SongObject songObject, Long albumId, Context ctx, String albumTitle, String artist, Activity activity)
-    {
-        this.albumId = albumId;
-        this.ctx = ctx;
-        this.albumTitle = albumTitle;
-        this.artist = artist;
-        this.activity = activity;
-        this.songObject = songObject;
+    public SpotifySolo(Context ctx, ArrayList<SongObject> requestList){
+        this.ctx=ctx;
+        this.requestList=requestList;
+        this.activity = (Activity) ctx;
     }
 
-    /** Make a Json request **/
-    public void makeRequest(String jsonObjectArrayUrl){
+    /** Make request **/
+    public void makeRequest(){
+        new Thread() {
+            public void run() {
+                for(int i=0;i<requestList.size();i++){
+                    fireRequest(requestList.get(i));
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+    }
+
+    /** Fire a Json request **/
+    public void fireRequest(SongObject songObject){
         //String JsonUrl = "https://itunes.apple.com/search?term=michael+jackson&entity=album";
+        String jsonObjectArrayUrl = spotifyUrl(songObject.artist,songObject.albumTitle);
         Itunes.getRequestQueue();
         GsonRequest<SpotifyAlbumInfo> myReq = new GsonRequest<>(
                 Request.Method.GET,
                 jsonObjectArrayUrl,
                 SpotifyAlbumInfo.class,
                 null,
-                createMyReqSuccessListener(albumId, jsonObjectArrayUrl),
+                createMyReqSuccessListener(Long.parseLong(songObject.albumID), jsonObjectArrayUrl, songObject),
                 createMyReqErrorListener(jsonObjectArrayUrl));
         Itunes.mRequestQueue.add(myReq);
     }
 
     /** Static request queue (we don't want multiple request queue objects)
-    public static RequestQueue getRequestQueue() {
-        if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(MainActivity.getAppContext());
-        }
-        return mRequestQueue;
-    }**/
+     public static RequestQueue getRequestQueue() {
+     if (mRequestQueue == null) {
+     mRequestQueue = Volley.newRequestQueue(MainActivity.getAppContext());
+     }
+     return mRequestQueue;
+     }**/
 
     /** custom error response listener **/
     private Response.ErrorListener createMyReqErrorListener(final String url) {
@@ -71,7 +78,7 @@ public class Spotify {
     }
 
     /** custom success response listener**/
-    private Response.Listener<SpotifyAlbumInfo> createMyReqSuccessListener(final Long albumId, final String jsonUrl) {
+    private Response.Listener<SpotifyAlbumInfo> createMyReqSuccessListener(final Long albumId, final String jsonUrl, final SongObject songObject) {
         return new Response.Listener<SpotifyAlbumInfo>() {
             @Override
 
@@ -85,12 +92,12 @@ public class Spotify {
                 Log.v("TAG","The json url is "+jsonUrl);
                 if(response.albums.items.size() == 0){
                     Log.v("TAG","No it does not exist on Spotify");
-                    Log.v("TAG","The album is "+albumTitle);
+                    Log.v("TAG","The album is "+songObject.albumTitle);
                     Log.v("TAG","Trying Amazon...");
                 } else {
                     imageUrl = response.albums.items.get(0).images.get(0).url; // get the first album url
                     Log.v("TAG","Yes, it does exist on Spotify.");
-                    Log.v("TAG","The album is "+albumTitle);
+                    Log.v("TAG","The album is "+songObject.albumTitle);
                     Log.v("TAG","The image url is "+imageUrl);
                 }
 
@@ -99,6 +106,16 @@ public class Spotify {
 
                     //BitMap bm = getAlbumArtFromMusicFile();
                 }
+
+                new Thread() {
+                    public void run() {
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }.start();
 
                 /** Download image **/
                 if(null != imageUrl){ // if imageUrl is not null, do this
@@ -165,7 +182,25 @@ public class Spotify {
         };
     }
 
-    public void getAlbumArtFromMusicFile(){
 
+
+    static public String spotifyUrl(String artist, String album){
+
+        //Log.v("TAG","artist is "+artist);
+        //Log.v("TAG","album is "+album);
+
+        String splitNameArtist = artist.replace(" ", "%20");
+        String splitNameAlbum = album.replace(" ", "%20");
+
+        //Log.v("TAG","splitNameArtist is "+splitNameArtist);
+        //Log.v("TAG","splitNameAlbum is "+splitNameAlbum);
+
+        String jsonUrl = "https://api.spotify.com/v1/search?q=album:arrival%20artist:abba&type=album" + "&limit=50"; // limit is 50 per page
+        jsonUrl = jsonUrl.replace("abba",splitNameArtist);
+        jsonUrl = jsonUrl.replace("arrival",splitNameAlbum);
+
+        //Log.v("TAG", "#@R#" + jsonUrl);
+
+        return jsonUrl;
     }
 }

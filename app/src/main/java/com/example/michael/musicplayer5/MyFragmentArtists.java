@@ -2,6 +2,7 @@ package com.example.michael.musicplayer5;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,8 @@ public class MyFragmentArtists extends Fragment {
 
         MyListAdapterArtists adapter = new MyListAdapterArtists(getActivity(), R.layout.item_list_view_artists, artistObjectList);
         listView.setAdapter(adapter);
+
+        Log.v("TAG", "artist adapter value is " + String.valueOf(adapter));
 
         UpdateAdapters.getInstance().setAdapterTwo(adapter);
 

@@ -95,7 +95,11 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
 
         if(albumObject.albumArtURI != null){
 
-            File f = new File(albumObject.albumArtURI);
+            File f=null;
+            if(null != albumObject.songObjectList && 0 != albumObject.songObjectList.size()){
+                f = new File(albumObject.songObjectList.get(0).albumArtURI);
+            }
+
 
             /** CODE WITHOUT CIRCULAR TRANSFORM
              Picasso.with(viewHolder.albumArt.getContext())

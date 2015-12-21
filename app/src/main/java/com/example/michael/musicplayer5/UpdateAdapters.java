@@ -37,11 +37,24 @@ public class UpdateAdapters {
 
     //Public methods
     public void update(){
-        if(null != myListAdapterArtists){myListAdapterArtists.notifyDataSetChanged();Log.v("TAG", "myListAdapterArtists successfully updated ");}
-        else{Log.v("TAG","myListAdapterArtists is a null reference " + myListAdapterArtists);}
-        if(null != myListAdapterTracks){myListAdapterTracks.notifyDataSetChanged();Log.v("TAG", "myListAdapterTracks successfully updated ");}
-        else{Log.v("TAG","myListAdapterTracks is a null reference " + myListAdapterTracks);}
-        if(null != myGridViewAdapter){myGridViewAdapter.notifyDataSetChanged();Log.v("TAG", "myGridViewAdapter successfully updated ");}
-        else{Log.v("TAG","myGridViewAdapter is a null reference " + myGridViewAdapter);}
+
+        if(null != myListAdapterArtists) {
+            myListAdapterArtists.notifyDataSetChanged();
+            Log.v("TAG", "myListAdapterArtists successfully updated ");
+        } else {
+            Log.v("TAG","myListAdapterArtists is a null reference ");}
+
+        if(null != myListAdapterTracks) {
+            myListAdapterTracks.notifyDataSetChanged();
+            Log.v("TAG", "myListAdapterTracks successfully updated ");
+        } else {
+            Log.v("TAG","myListAdapterTracks is a null reference ");}
+
+        if(null != myGridViewAdapter) {
+            myGridViewAdapter.notifyDataSetChanged();
+            Log.v("TAG", "myGridViewAdapter successfully updated ");
+        } else {
+            Log.v("TAG","myGridViewAdapter is a null reference ");
+        }
     }
 }

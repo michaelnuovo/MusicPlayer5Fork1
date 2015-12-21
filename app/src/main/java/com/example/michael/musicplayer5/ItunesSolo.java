@@ -1,5 +1,9 @@
 package com.example.michael.musicplayer5;
 
+/**
+ * Created by michael on 12/20/15.
+ */
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,6 +16,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.util.ArrayList;
+
 /**
  * This class allows the user to make a json request.
  * After the json request is made, and if the request is successful,
@@ -22,33 +28,41 @@ import com.android.volley.toolbox.Volley;
  * This class will also update the filepath to the Android meta data using another class.
  * This class will also update the application adapters using another class notifying them of the underling file path change.
  */
-public class Itunes {
+public class ItunesSolo {
 
-    Long albumId;
+
     public static RequestQueue mRequestQueue;
     Context ctx;
-    String albumTitle;
-    String artist;
     Activity activity;
-    String albumArtUri;
-    SongObject songObject;
+    ArrayList<SongObject> requestList;
 
-    /** Constructor **/
-    public Itunes(SongObject songObject, String albumArtURI, Long albumId, Context ctx, String albumTitle, String artist, Activity activity)
-    {
-        this.songObject = songObject;
-        this.albumArtUri = albumArtURI;
-        this.albumId = albumId;
-        this.ctx = ctx;
-        this.albumTitle = albumTitle;
-        this.artist = artist;
-        this.activity = activity;
+    public ItunesSolo(Context ctx, ArrayList<SongObject> requestList){
+
+        this.ctx=ctx;
+        this.activity = (Activity) ctx;
+        this.requestList=requestList;
+    }
+
+    /** Make request **/
+    public void makeRequest(){
+        new Thread() {
+            public void run() {
+                for(int i=0;i<requestList.size();i++){
+                    fireRequest(requestList.get(i));
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
     }
 
     /** Make a Json request **/
-    public void makeRequest(){
+    public void fireRequest(final SongObject songObject){
         //String JsonUrl = "https://itunes.apple.com/search?term=michael+jackson&entity=album";
-        String jsonObjectArrayUrl = Parse.iTunesUrl(artist);
+        String jsonObjectArrayUrl = getItunesRequestUrl(songObject.artist);
 
         getRequestQueue();
         GsonRequest<ItunesAlbumInfo> myReq = new GsonRequest<>(
@@ -56,12 +70,19 @@ public class Itunes {
                 jsonObjectArrayUrl,
                 ItunesAlbumInfo.class,
                 null,
-                createMyReqSuccessListener(albumId, jsonObjectArrayUrl),
+                createMyReqSuccessListener(Long.parseLong(songObject.albumID), jsonObjectArrayUrl, songObject),
                 createMyReqErrorListener(jsonObjectArrayUrl));
         mRequestQueue.add(myReq);
     }
 
+    static public String getItunesRequestUrl(String artists){
 
+        // our model url:
+        // https://itunes.apple.com/search?term=keith+jarrett+and+charlie+haden&media=music
+
+        String splitNameString = artists.replace(" ", "+");
+        return "https://itunes.apple.com/search?term=" + splitNameString + "&media=music" + "&limit=200"; // limit is 200 per page
+    }
 
     /** Static request queue (we don't want multiple request queue objects) **/
     public static RequestQueue getRequestQueue() {
@@ -77,13 +98,13 @@ public class Itunes {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // Do whatever you want to do with error.getMessage();
-                Log.v("TAG","Bad url is: "+String.valueOf(url));
+                Log.v("TAG", "Bad url is: " + String.valueOf(url));
             }
         };
     }
 
     /** custom success response listener**/
-    private Response.Listener<ItunesAlbumInfo> createMyReqSuccessListener(final Long albumId, final String jsonUrl) {
+    private Response.Listener<ItunesAlbumInfo> createMyReqSuccessListener(final Long albumId, final String jsonUrl, final SongObject songObject) {
         return new Response.Listener<ItunesAlbumInfo>() {
             @Override
 
@@ -92,27 +113,21 @@ public class Itunes {
 
                 String imageUrl=null;
 
-                Log.v("TAG","*************************************");
-                Log.v("TAG","The image url is initialized to null ");
-                Log.v("TAG","Does the image exist on iTunes? ");
-
-                /** Get image url **/
-                Log.v("TAG","(result count it "+response.resultCount+")");
-                Log.v("TAG","The object url is "+jsonUrl);
                 if(response.resultCount > 0){
                     //Log.v("TAG","response.results.size() is "+String.valueOf(response.results.size()));
                     for(int i=0;i<response.results.size();i++){
-                        //Log.v("TAG","'i' is "+String.valueOf(i));
-                        //Log.v("TAG","Collection name is "+response.results.get(i).collectionName);
+                        Log.v("TAG","'i' is "+String.valueOf(i));
+                        Log.v("TAG","Collection name is "+response.results.get(i).collectionName);
+                        Log.v("TAG","songObject.albumTitle is "+songObject.albumTitle);
                         if(null != response.results.get(i).collectionName &&                   // collection name must not be null
-                                response.results.get(i).collectionName.contains(albumTitle)){  // for .contains() method not to throw an error
+                                response.results.get(i).collectionName.contains(songObject.albumTitle)){  // for .contains() method not to throw an error
                             imageUrl = response.results.get(i).artworkUrl60;
                             Log.v("TAG","Yes it does exist on iTunes. ");
                             Log.v("TAG", "The image url is " + imageUrl);
                             break;
                         }
                         if(i==response.results.size()-1){
-                            Log.v("TAG","album "+albumTitle+"not found");
+                            Log.v("TAG","album not found: "+songObject.albumTitle);
                             Log.v("TAG","The object url is "+jsonUrl);
                         }
                     }
@@ -129,13 +144,20 @@ public class Itunes {
 
                 /** Try Spotify if image url is null **/
                 if(null == imageUrl){
-                    Parse parse = new Parse();
-                    Spotify spotify = new Spotify(songObject, albumId, ctx, albumTitle, artist, activity);
-                    spotify.makeRequest(parse.spotifyUrl(artist,albumTitle));
+                    //Parse parse = new Parse();
+                    //Spotify spotify = new Spotify(songObject, albumId, ctx, albumTitle, artist, activity);
+                    //spotify.makeRequest(parse.spotifyUrl(artist,albumTitle));
                 }
 
-
-
+                new Thread() {
+                    public void run() {
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }.start();
 
                 /** Download image **/
                 if(null != imageUrl){ // if imageUrl is not null, do this
@@ -201,4 +223,6 @@ public class Itunes {
             }
         };
     }
+
+
 }
