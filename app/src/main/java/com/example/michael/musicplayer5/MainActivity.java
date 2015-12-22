@@ -21,6 +21,8 @@ import android.widget.LinearLayout;
 import android.widget.ToggleButton;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,6 +62,17 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /**
+        String encStr = "not encoded";
+        try {
+            encStr = URLEncoder.encode("ASd asd", "UTF_8");
+        } catch (UnsupportedEncodingException e) {
+            Log.v("TAG","stack trace");
+            e.printStackTrace();
+        }
+        Log.v("TAG","this thing here is : "+encStr);
+         **/
 
         /** Set global context variables **/
         ctx = getApplicationContext();
