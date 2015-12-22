@@ -31,28 +31,12 @@ import java.util.Map;
  */
 public class AmazonSolo {
 
-    Long albumId;
-    //private static RequestQueue mRequestQueue;
+
     Context ctx;
-    String albumTitle;
-    String artist;
-    SongObject songObject;
-    //public static RequestQueue mRequestQueue;
     Activity activity;
-    ArrayList<SongObject> requestList;
+    ArrayList<AlbumObject> requestList;
 
-    /** Constructor **/
-    public AmazonSolo(Long albumId, Context ctx, String albumTitle, String artist, SongObject songObject, Activity activity)
-    {
-        this.albumId = albumId;
-        this.ctx = ctx;
-        this.albumTitle = albumTitle;
-        this.artist = artist;
-        this.songObject = songObject;
-        this.activity = activity;
-    }
-
-    public AmazonSolo(Context ctx, ArrayList<SongObject> requestList){
+    public AmazonSolo(Context ctx, ArrayList<AlbumObject> requestList){
         this.ctx = ctx;
         this.activity = (Activity) ctx;
         this.requestList=requestList;
@@ -72,21 +56,25 @@ public class AmazonSolo {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // Do whatever you want to do with error.getMessage();
-                Log.v("TAG", "Bad url is: " + String.valueOf(url));
+                Log.v("TAG", "error.getMessage() is: " + error.getMessage());
             }
         };
     }
 
-    /** Time request **/
+    /** Make request **/
     public void makeRequest(){
+        Log.v("TAG","Amazon is making req");
         new Thread() {
             public void run() {
                 for(int i=0;i<requestList.size();i++){
-                    fireRequest(requestList.get(i));
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if(requestList.get(i).albumArtURI.equals("null")){
+                        fireRequest(requestList.get(i));
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                 }
             }
@@ -94,19 +82,19 @@ public class AmazonSolo {
     }
 
     /** Make a Json request **/
-    public void fireRequest(final SongObject songObject){
+    public void fireRequest(final AlbumObject albumObject){
 
                 SignedRequestsHelper helper = new SignedRequestsHelper();
                 Map<String, String> values = new HashMap<String, String>();
                 values.put("Operation", "ItemSearch");
                 values.put("AssociateTag", "mytag-20");
                 values.put("SearchIndex", "Music");
-                values.put("Artist", songObject.artist);
-                values.put("Title", songObject.albumTitle);
+                values.put("Artist", albumObject.albumArtist);
+                values.put("Title", albumObject.albumTitle);
                 final String url = helper.sign(values);
 
                 Log.v("TAG","Making request "+url);
-                Log.v("TAG", "album is " + songObject.albumTitle);
+                Log.v("TAG", "album is " + albumObject.albumTitle);
 
                 Itunes.getRequestQueue();
 
@@ -131,7 +119,7 @@ public class AmazonSolo {
                                     Log.v("TAG","-------------------------------------");
                                     Log.v("TAG","There is no ASIN number, lets try iTunes");
                                     Log.v("TAG","parse value is: "+asinValue);
-                                    Log.v("TAG","the amazon album title is: "+songObject.albumTitle);
+                                    Log.v("TAG","the amazon album title is: "+albumObject.albumTitle);
                                     Log.v("TAG","the xml url is: "+url);
                                     Log.v("TAG","the image url is: "+imageUrl);
                                     Log.v("TAG","-------------------------------------");
@@ -144,7 +132,7 @@ public class AmazonSolo {
                                 new Thread() {
                                     public void run() {
                                         try {
-                                            Thread.sleep(500);
+                                            Thread.sleep(1000);
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
@@ -162,35 +150,47 @@ public class AmazonSolo {
                                                     if(response.getHeight() ==1 && response.getWidth() == 1){
                                                         Log.v("TAG","bit map is a deafault response");
                                                         //use anotehr thigny
-                                                    }
+                                                    } else {
 
-                                                    Bitmap emptyBitmap = Bitmap.createBitmap(response.getWidth(), response.getHeight(), response.getConfig());
-                                                    if (response.sameAs(emptyBitmap)) {
-                                                        Log.v("TAG","bit map is blank");
-                                                    }
-
-                                                    // Save the bitmap to disk, return an image path
-                                                    SaveBitMapToDisk saveImage = new SaveBitMapToDisk();
-                                                    saveImage.SaveImage(response, "myalbumart");
-                                                    String imagePathData = saveImage.getImagePath();
-
-                                                    // Update the image path to Android meta data
-                                                    MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
-                                                    mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(songObject.albumID), imagePathData);
-
-                                                    //update uri path
-                                                    songObject.albumArtURI = imagePathData;
-
-                                                    // Update all adapters (not yet implemented)
-                                                    Log.v("TAG","value of activity is "+activity);
-                                                    activity.runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-
-                                                            UpdateAdapters.getInstance().update();
-
+                                                        Bitmap emptyBitmap = Bitmap.createBitmap(response.getWidth(), response.getHeight(), response.getConfig());
+                                                        if (response.sameAs(emptyBitmap)) {
+                                                            Log.v("TAG","bit map is blank");
                                                         }
-                                                    });
+
+                                                        // Save the bitmap to disk, return an image path
+                                                        SaveBitMapToDisk saveImage = new SaveBitMapToDisk();
+                                                        saveImage.SaveImage(response, "myalbumart");
+                                                        String imagePathData = saveImage.getImagePath();
+
+                                                        // Update the image path to Android meta data
+                                                        MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
+                                                        mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObject.albumId), imagePathData);
+
+                                                        Log.v("TAG", "Writing album : " + albumObject.albumTitle);
+                                                        Log.v("TAG","Writing path : "+imagePathData);
+
+                                                        //update uri path
+                                                        albumObject.albumArtURI = imagePathData;
+
+                                                        //up uri paths of song objects
+                                                        for(int i=0;i<albumObject.songObjectList.size();i++){
+                                                            albumObject.songObjectList.get(i).albumArtURI = imagePathData;
+                                                        }
+
+                                                        // Update all adapters (not yet implemented)
+                                                        Log.v("TAG","value of activity is "+activity);
+                                                        activity.runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+
+                                                                Log.v("TAG","updating adapters ");
+                                                                UpdateAdapters.getInstance().update();
+
+                                                            }
+                                                        });
+                                                    }
+
+
                                                 }
                                             }.start();
                                         }
@@ -251,7 +251,7 @@ public class AmazonSolo {
         }
     }
 
-    public String getFromKeyWordSearch(){
+    public String getFromKeyWordSearch(String albumTitle){
 
         SignedRequestsHelper helper = new SignedRequestsHelper();
         Map<String, String> values = new HashMap<String, String>();

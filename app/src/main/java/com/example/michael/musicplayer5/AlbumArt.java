@@ -21,17 +21,18 @@ public class AlbumArt {
     Context ctx;
     ArrayList<String[]> paths = new ArrayList();
 
-    ArrayList<SongObject> requestList;
+    ArrayList<AlbumObject> requestList;
     Activity activity;
 
-    public AlbumArt(Context ctx, ArrayList<SongObject> requestList){
+    public AlbumArt(Context ctx, ArrayList<AlbumObject> requestList){
 
         this.ctx = ctx;
         this.requestList=requestList;
         this.activity = (Activity) ctx;
+        initFields();
     }
 
-    public void setOriginals(){
+    public void resetPaths(){
         MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
         for(int i=0;i<paths.size();i++){
@@ -58,18 +59,26 @@ public class AlbumArt {
 
         }
 
+
+
+
         //update songobject uri paths
         for(int i=0;i<requestList.size();i++){
             boolean match = false;
             while(match == false){
                 for(int j=0;j<paths.size();j++){
-                    if(requestList.get(i).albumID==paths.get(j)[0]){
-                        requestList.get(i).albumID = paths.get(j)[1];
+                    Log.v("TAG","value of requestList.get(i).albumId is "+requestList.get(i).albumId);
+                    Log.v("TAG","value of paths.get(j)[0]) is "+paths.get(j)[0]);
+                    if(requestList.get(i).albumId == Integer.parseInt(paths.get(j)[0])){
+                        for(int k=0;k<requestList.get(i).songObjectList.size();k++){
+                            requestList.get(i).songObjectList.get(k).albumArtURI = paths.get(j)[1];
+                        }
                         match = true;
                     }
                 }
             }
         }
+
 
 
         //Log.v("TAG","value of activity is "+activity);
@@ -85,7 +94,54 @@ public class AlbumArt {
 
     }
 
-    public ArrayList initializeData() {
+    public void setAllPathsToNull(){
+
+        MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        for(int i=0;i<paths.size();i++){
+
+                mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(paths.get(i)[1]), "null"); // id / path
+                paths.get(i)[0]="null";
+
+
+        }
+
+        Log.v("TAG","paths is : "+paths);
+
+        //update songobject uri paths
+        for(int i=0;i<requestList.size();i++){
+            boolean match = false;
+            while(match == false){
+                for(int j=0;j<paths.size();j++){
+                    Log.v("TAG","value of requestList.get(i).albumId is "+requestList.get(i).albumId);
+                    Log.v("TAG","value of paths.get(j)[0]) is "+paths.get(j)[0]);
+                    if(requestList.get(i).albumId == Integer.parseInt(paths.get(j)[1])){
+
+                        for(int k=0;k<requestList.get(i).songObjectList.size();k++){
+                            requestList.get(i).songObjectList.get(k).albumArtURI = paths.get(j)[1];
+                        }
+                        match = true;
+                    }
+                }
+            }
+        }
+
+
+
+
+        //Log.v("TAG","value of activity is "+activity);
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                UpdateAdapters.getInstance().update();
+
+            }
+        });
+
+    }
+
+    public ArrayList initFields() {
         Uri contentURI = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {
                 MediaStore.Audio.Media.ALBUM,
@@ -107,7 +163,7 @@ public class AlbumArt {
             //DatabaseUtils.dumpCursor(mCursor);
             String str = mCursor.getString(3);
             String id = mCursor.getString(5);
-            String[] element = {str,id};
+            String[] element = {str,id}; // path / id
             paths.add(element);
             Log.v("TAG", "string is " + str);
 
@@ -147,7 +203,8 @@ public class AlbumArt {
         String[] projection = {
                 MediaStore.Audio.Albums.ALBUM,
                 MediaStore.Audio.Albums.ARTIST,
-                MediaStore.Audio.Albums.ALBUM_ART};
+                MediaStore.Audio.Albums.ALBUM_ART,
+                MediaStore.Audio.Albums._ID};
         String selection = null;
         String order = null;
         final Cursor mCursor = ctx.getContentResolver().query(contentURI, projection, selection, null, order);// Run getContentResolver query

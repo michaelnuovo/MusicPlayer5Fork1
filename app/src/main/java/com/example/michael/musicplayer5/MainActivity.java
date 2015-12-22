@@ -23,7 +23,9 @@ import android.widget.ToggleButton;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 //import org.apache.commons.io.FileUtils;
 
@@ -38,8 +40,11 @@ public class MainActivity extends AppCompatActivity {
     }
     private Activity activity;
     private ArrayList<SongObject> requestList = new ArrayList<>();
+    String targetValue;
 
     final static ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
+
+
 
     @Override
     public void onResume(){
@@ -68,18 +73,10 @@ public class MainActivity extends AppCompatActivity {
         //StaticMusicPlayer.setList(mainList);
 
         /** Overrite data paths **/
-        MediaStoreInterface mint = new MediaStoreInterface(ctx);
+        //MediaStoreInterface mint = new MediaStoreInterface(ctx);
+        //mint.clearFolder("myalbumart");
         //mint.dumpAlbumColumns();
         //mint.setAllAlbumDataToX(); // this operation takes quite a bit of time
-        //mint.clearFolder("myalbumart");
-        /*
-        String root = Environment.getExternalStorageDirectory().toString();
-        File mFile = new File(root + "myalbumart");
-        try {
-            FileUtils.cleanDirectory(mFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
 
         /** Populate lists **/
         //scanMedia();
@@ -87,21 +84,26 @@ public class MainActivity extends AppCompatActivity {
         MakeLists(songListCursor, songObjectList, songObjectList_shuffled, albumObjectList, artistObjectList);
         Collections.shuffle(songObjectList_shuffled);
 
+        /** Restoring original artworks**/
+        //Log.v("TAG", "album object list size is : " + albumObjectList.size());
+        //for(int i=0;i<albumObjectList.size();i++){
+        //    Log.v("TAG", "album title is : " + albumObjectList.get(i).albumTitle);
+        //}
 
         /** Make network requests **/
-        //AmazonSolo amzn = new AmazonSolo(this, requestList);
-        //amzn.makeRequest();
-        //ItunesSolo its = new ItunesSolo(this,requestList);
-        //its.makeRequest();
-        //SpotifySolo spy = new SpotifySolo(this,requestList);
-        //spy.makeRequest();
-
-
-        /** Restoring original artworks**/
-        //AlbumArt aa = new AlbumArt(this,requestList);
-        //aa.initializeData();
-        //aa.setOriginals();
+        //AlbumArt aa = new AlbumArt(this,albumObjectList);
+        //aa.resetPaths(); // set to album path to null if there are no images
+        //aa.setAllPathsToNull();
         //aa.dumpAlbumColumns();
+        AmazonSolo amzn = new AmazonSolo(this, albumObjectList);
+        amzn.makeRequest();
+        ItunesSolo its = new ItunesSolo(this,albumObjectList);
+        its.makeRequest();
+        SpotifySolo spy = new SpotifySolo(this,albumObjectList);
+        spy.makeRequest();
+
+        /** Target value **/
+        targetValue = "null";
 
         /**  Logs **/
         //Log.v("TAG","value of activity is "+activity);
@@ -171,14 +173,34 @@ public class MainActivity extends AppCompatActivity {
                 /** dumb album columns **/
                 //MediaStoreInterface mint = new MediaStoreInterface(ctx);
                 //mint.dumpAlbumColumns();
-                for(int i=0;i<albumObjectList.size();i++){
-                    Log.v("TAG","album is: "+albumObjectList.get(i).albumTitle);
-                    Log.v("TAG","album art uri: "+albumObjectList.get(i).songObjectList.get(0).albumArtURI);
 
-                    /*
-                    for(int j=0;j<albumObjectList.get(i).songObjectList.size();j++){
-                        Log.v("TAG","song object data path is: "+songObjectList.get(j).albumArtURI);
-                    }*/
+
+
+                SpotifySolo spotify = new SpotifySolo(MainActivity.this,albumObjectList);
+                ItunesSolo itunes = new ItunesSolo(MainActivity.this,albumObjectList);
+                AmazonSolo amazon = new AmazonSolo(MainActivity.this,albumObjectList);
+
+
+                for(int i=0;i<albumObjectList.size();i++){
+                    if(albumObjectList.get(i).albumArtURI.equals("null")){
+
+                        SignedRequestsHelper helper = new SignedRequestsHelper();
+                        Map<String, String> values = new HashMap<String, String>();
+                        values.put("Operation", "ItemSearch");
+                        values.put("AssociateTag", "mytag-20");
+                        values.put("SearchIndex", "Music");
+                        values.put("Artist", albumObjectList.get(i).albumArtist);
+                        values.put("Title", albumObjectList.get(i).albumTitle);
+                        final String amazonurl = helper.sign(values);
+
+                        Log.v("TAG","---------------------------------------------------");
+                        Log.v("TAG","album is: "+albumObjectList.get(i).albumTitle);
+                        Log.v("TAG","album art uri: "+albumObjectList.get(i).songObjectList.get(0).albumArtURI);
+                        Log.v("TAG","spotify request url : "+spotify.spotifyUrl(albumObjectList.get(i).albumArtist,albumObjectList.get(i).albumTitle));
+                        Log.v("TAG","itunes request url : "+itunes.getItunesRequestUrl(albumObjectList.get(i).albumArtist));
+                        Log.v("TAG","amazon request url : " + amazonurl);
+                        Log.v("TAG","---------------------------------------------------");
+                    }
                 }
 
                 // Open the play panel
@@ -282,11 +304,11 @@ public class MainActivity extends AppCompatActivity {
 
 
                     /** Download images **/
-                    if(songObject.albumArtURI.equals("X")){ //If the data is an empty string
-                        updatePath = new MediaStoreInterface(ctx);
-                        updatePath.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(albumID[0]), "Y"); //So we only do one album at a time
-                        requestList.add(songObject);
-                    }
+                    //if(songObject.albumArtURI.equals(targetValue)){ //If the data is an empty string
+                        //updatePath = new MediaStoreInterface(ctx);
+                        //updatePath.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(albumID[0]), "Y"); //So we only do one album at a time
+                       // requestList.add(songObject);
+                    //}
 
                     // add song object to lists
                     songObjectList.add(songObject);
@@ -296,63 +318,77 @@ public class MainActivity extends AppCompatActivity {
                     final String albumArtURI = songObject.albumArtURI;
 
                     /** Making the album object and adding it to the list **/
-                    // if albumObjectList is empty, add a new album object
-                    // then check if there is an albumObject in the list where albumObject.albumTitle = songObject.albumTitle
-                    // if yes, add the songObject to the existing albumObjects albumObject.songObjectList
-                    // if not, create a new albumObject, add the songObject to albumObject.songObjectList
-                    // we also need to increment the albumTrackCount in the process
-
-                    new Thread() {
-                        public void run() {
-                            if(albumObjectList.isEmpty()){
-                                albumObjectList.add(new AlbumObject(albumTitle,albumArtist,songObject.albumArtURI,songObject));
-                            } else {
-
-                                boolean bool = false;
-                                for(int i = 0; i < albumObjectList.size(); i++) {
-
-                                    if(albumObjectList.get(i).albumTitle.equals(albumTitle)) {
-                                        albumObjectList.get(i).songObjectList.add(songObject);
-                                        //albumObjectList.get(i).albumArtURI = songObject.albumArtURI;
-                                        albumObjectList.get(i).albumTrackCount += 1;
-
-                                        bool = true;
-                                    }
-                                }
-
-                                if(bool == false){
-                                    AlbumObject newAlbumObject = new AlbumObject(albumTitle,albumArtist,albumArtURI,songObject);
-                                    newAlbumObject.albumTrackCount +=1;
-                                    albumObjectList.add(newAlbumObject);
-                                }
-                            }
-
-                            /** Making the artist object and adding it to the list **/
-
-                            if(artistObjectList.isEmpty()){
-                                artistObjectList.add(new ArtistObject(songObject));
-                            } else {
-
-                                boolean bool = false;
-                                for(int i = 0; i < artistObjectList.size(); i++) {
-
-                                    if(artistObjectList.get(i).artistName.equals(artistFinal)) {
-                                        artistObjectList.get(i).songObjectList.add(songObject);
-                                        artistObjectList.get(i).artistTrackCount += 1;
-
-                                        bool = true;
-                                    }
-                                }
-
-                                if(bool == false){
-                                    ArtistObject newArtistObject = new ArtistObject(songObject);
-                                    newArtistObject.artistTrackCount += 1;
-                                    artistObjectList.add(newArtistObject);
-                                }
+                    if(albumObjectList.size() != 0){
+                        boolean songAdded = false;
+                        for(int i=0;i<albumObjectList.size();i++){
+                            if(albumObjectList.get(i).albumId == Integer.parseInt(songObject.albumID)){
+                                albumObjectList.get(i).songObjectList.add(songObject);
+                                songAdded = true;
+                                Log.v("TAG", "song added");
+                                break;
                             }
                         }
-                    }.start();
 
+                        if(songAdded == false){
+                            Log.v("TAG", "new album created");
+                            albumObjectList.add(new AlbumObject(songObject));
+                        }
+
+                    } else {
+                        albumObjectList.add(new AlbumObject(songObject));
+                    }
+
+                    /**
+                    if(albumObjectList.isEmpty()){
+                        albumObjectList.add(new AlbumObject(albumTitle,albumArtist,songObject.albumArtURI,songObject));
+                    } else {
+
+                        boolean bool = false;
+                        for(int i = 0; i < albumObjectList.size(); i++) { // of the song is already added, don't add it again
+
+                            if(albumObjectList.get(i).albumTitle.equals(albumTitle)) {
+                                albumObjectList.get(i).songObjectList.add(songObject);
+                                albumObjectList.get(i).albumArtURI = songObject.albumArtURI;
+                                albumObjectList.get(i).albumId = Integer.parseInt(songObject.albumID);
+                                Log.v("TAG","album id is here : "+songObject.albumID);
+                                albumObjectList.get(i).albumTitle = songObject.albumTitle;
+                                albumObjectList.get(i).albumArtist = songObject.artist;
+                                albumObjectList.get(i).albumTrackCount += 1;
+
+                                bool = true;
+                            }
+                        }
+
+                        if(bool == false){ // if the song is not added, add it
+                            AlbumObject newAlbumObject = new AlbumObject(albumTitle,albumArtist,albumArtURI,songObject);
+                            newAlbumObject.albumTrackCount +=1;
+                            albumObjectList.add(newAlbumObject);
+                        }
+                    }**/
+
+                    /** Making the artist object and adding it to the list **/
+
+                    if(artistObjectList.isEmpty()){
+                        artistObjectList.add(new ArtistObject(songObject));
+                    } else {
+
+                        boolean bool = false;
+                        for(int i = 0; i < artistObjectList.size(); i++) {
+
+                            if(artistObjectList.get(i).artistName.equals(artistFinal)) {
+                                artistObjectList.get(i).songObjectList.add(songObject);
+                                artistObjectList.get(i).artistTrackCount += 1;
+
+                                bool = true;
+                            }
+                        }
+
+                        if(bool == false){
+                            ArtistObject newArtistObject = new ArtistObject(songObject);
+                            newArtistObject.artistTrackCount += 1;
+                            artistObjectList.add(newArtistObject);
+                        }
+                    }
 
                 } while (mCursor.moveToNext());
             }

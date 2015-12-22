@@ -13,6 +13,7 @@ public class AlbumObject implements Parcelable {
     public String albumTitle;
     public String albumArtist;
     public int albumTrackCount = 0;
+    public int albumId;
     public String albumArtURI;
     public ArrayList<SongObject> songObjectList = new ArrayList<>();
 
@@ -24,6 +25,16 @@ public class AlbumObject implements Parcelable {
         this.songObjectList.add(songObject);
 
     }
+    public AlbumObject(SongObject songObject){
+
+        this.albumTitle = songObject.albumTitle;
+        this.albumArtist = songObject.artist;
+        this.albumArtURI = songObject.albumArtURI;
+        this.albumId = Integer.valueOf(songObject.albumID);
+        this.songObjectList.add(songObject);
+
+    }
+
 
     // Parcelable Code
 
@@ -35,6 +46,7 @@ public class AlbumObject implements Parcelable {
         albumArtist = in.readString();
         albumArtURI = in.readString();
         albumTrackCount = in.readInt();
+        albumId=in.readInt();
         in.readTypedList(songObjectList, SongObject.CREATOR);
     }
 
@@ -58,6 +70,7 @@ public class AlbumObject implements Parcelable {
         albumArtist = in.readString();
 
         albumTrackCount = in.readInt();
+        albumId=in.readInt();
         in.readTypedList(songObjectList, SongObject.CREATOR);
 
     }
@@ -72,6 +85,7 @@ public class AlbumObject implements Parcelable {
         dest.writeString(albumArtist);
 
         dest.writeInt(albumTrackCount);
+        dest.writeInt(albumId);
         dest.writeTypedList(songObjectList);
 
     }

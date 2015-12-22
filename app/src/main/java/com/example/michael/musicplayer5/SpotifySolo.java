@@ -19,9 +19,9 @@ public class SpotifySolo {
 
     Context ctx;
     Activity activity;
-    ArrayList<SongObject> requestList;
+    ArrayList<AlbumObject> requestList;
 
-    public SpotifySolo(Context ctx, ArrayList<SongObject> requestList){
+    public SpotifySolo(Context ctx, ArrayList<AlbumObject> requestList){
         this.ctx=ctx;
         this.requestList=requestList;
         this.activity = (Activity) ctx;
@@ -29,14 +29,18 @@ public class SpotifySolo {
 
     /** Make request **/
     public void makeRequest(){
+        Log.v("TAG","Spot is making req");
         new Thread() {
             public void run() {
                 for(int i=0;i<requestList.size();i++){
-                    fireRequest(requestList.get(i));
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if(requestList.get(i).albumArtURI.equals("null")){
+                        fireRequest(requestList.get(i));
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                 }
             }
@@ -44,16 +48,28 @@ public class SpotifySolo {
     }
 
     /** Fire a Json request **/
-    public void fireRequest(SongObject songObject){
-        //String JsonUrl = "https://itunes.apple.com/search?term=michael+jackson&entity=album";
-        String jsonObjectArrayUrl = spotifyUrl(songObject.artist,songObject.albumTitle);
+    public void fireRequest(AlbumObject albumObject){
+
+        //https://developer.spotify.com/web-api/authorization-guide/
+
+        Log.v("TAG","Spot is firing req");
+
+        String jsonObjectArrayUrl = spotifyUrl(albumObject.albumArtist,albumObject.albumTitle);
+
+        Log.v("TAG","alnum artist is "+albumObject.albumArtist);
+        Log.v("TAG","albumTitle is "+albumObject.albumTitle);
+        Log.v("TAG","jsonObjectArrayUrl is "+jsonObjectArrayUrl);
+
+
+
         Itunes.getRequestQueue();
+
         GsonRequest<SpotifyAlbumInfo> myReq = new GsonRequest<>(
                 Request.Method.GET,
                 jsonObjectArrayUrl,
                 SpotifyAlbumInfo.class,
                 null,
-                createMyReqSuccessListener(Long.parseLong(songObject.albumID), jsonObjectArrayUrl, songObject),
+                createMyReqSuccessListener(jsonObjectArrayUrl, albumObject),
                 createMyReqErrorListener(jsonObjectArrayUrl));
         Itunes.mRequestQueue.add(myReq);
     }
@@ -72,13 +88,14 @@ public class SpotifySolo {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // Do whatever you want to do with error.getMessage();
-                Log.v("TAG", "Bad url is: " + String.valueOf(url));
+                Log.v("TAG", "spotify error.getMessage() is " + error.getMessage());
+                Log.v("TAG", "url is " + url);
             }
         };
     }
 
     /** custom success response listener**/
-    private Response.Listener<SpotifyAlbumInfo> createMyReqSuccessListener(final Long albumId, final String jsonUrl, final SongObject songObject) {
+    private Response.Listener<SpotifyAlbumInfo> createMyReqSuccessListener(final String jsonUrl, final AlbumObject albumObject) {
         return new Response.Listener<SpotifyAlbumInfo>() {
             @Override
 
@@ -87,24 +104,26 @@ public class SpotifySolo {
 
                 String imageUrl=null;                             // initialize the image url we will parse to null
 
+                Log.v("TAG","Spot is got a response");
+
                 /** Spotify **/
                 Log.v("TAG","Number of items is "+String.valueOf(response.albums.items.size()));
                 Log.v("TAG","The json url is "+jsonUrl);
                 if(response.albums.items.size() == 0){
                     Log.v("TAG","No it does not exist on Spotify");
-                    Log.v("TAG","The album is "+songObject.albumTitle);
+                    Log.v("TAG","The album is "+albumObject.albumTitle);
                     Log.v("TAG","Trying Amazon...");
                 } else {
                     imageUrl = response.albums.items.get(0).images.get(0).url; // get the first album url
                     Log.v("TAG","Yes, it does exist on Spotify.");
-                    Log.v("TAG","The album is "+songObject.albumTitle);
+                    Log.v("TAG","The album is "+albumObject.albumTitle);
                     Log.v("TAG","The image url is "+imageUrl);
                 }
 
                 /** Try to use native image embedded in the music file **/
                 if(null == imageUrl){
 
-                    //BitMap bm = getAlbumArtFromMusicFile();
+                    //its.makeRequest();
                 }
 
                 new Thread() {
@@ -137,10 +156,15 @@ public class SpotifySolo {
 
                                     // Update the image path to Android meta data
                                     MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
-                                    mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(albumId, imagePathData);
+                                    mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObject.albumId), imagePathData);
 
                                     //update uri path
-                                    songObject.albumArtURI = imagePathData;
+                                    albumObject.albumArtURI = imagePathData;
+
+                                    //up uri paths of song objects
+                                    for(int i=0;i<albumObject.songObjectList.size();i++){
+                                        albumObject.songObjectList.get(i).albumArtURI = imagePathData;
+                                    }
 
                                     // Update all adapters (not yet implemented)
                                     Log.v("TAG","value of activity is "+activity);
@@ -148,6 +172,7 @@ public class SpotifySolo {
                                         @Override
                                         public void run() {
 
+                                            Log.v("TAG","updating adapters for spotify "+activity);
                                             UpdateAdapters.getInstance().update();
 
                                         }
@@ -185,6 +210,9 @@ public class SpotifySolo {
 
 
     static public String spotifyUrl(String artist, String album){
+
+        //Web API Base URL: https://api.spotify.com
+        //https://developer.spotify.com/web-api/endpoint-reference/
 
         //Log.v("TAG","artist is "+artist);
         //Log.v("TAG","album is "+album);
