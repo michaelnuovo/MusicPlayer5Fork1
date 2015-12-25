@@ -21,7 +21,8 @@ import android.widget.ToggleButton;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayPanelActivity extends AppCompatActivity {
+public class ActivityPlayPanel extends AppCompatActivity {
+
 
 
     @Override
@@ -29,12 +30,15 @@ public class PlayPanelActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_panel);
 
+        //MainActivity.playPager.setCurrentItem(StaticMusicPlayer.currentIndex);
+
         //ArrayList<SongObject> songObjectList = MainActivity.mainList;
 
         ViewPager playPager;
 
-        playPager = (ViewPager) findViewById(R.id.playPager);
-        playPager.setAdapter(new MyPagerAdapterPlay(this));
+        playPager = (ViewPager) findViewById(R.id.playPager); //id of the view pager xml widget
+        playPager.setAdapter(new PageAdapterPlayPanel(this)); //the adapter designates pager layout, and the which layout view to adapt to
+                                                              //so we are sticking the layout into the adapter widget, and adapter a child view in the layout
 
         playPager.setCurrentItem(StaticMusicPlayer.currentIndex);
 

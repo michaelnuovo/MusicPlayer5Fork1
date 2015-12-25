@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,20 +19,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 //import org.apache.commons.io.FileUtils;
 
-public class MainActivity extends AppCompatActivity {
+public class ActivityMain extends AppCompatActivity {
+
 
     //testing
 
@@ -43,10 +42,21 @@ public class MainActivity extends AppCompatActivity {
     private Activity activity;
     private ArrayList<SongObject> requestList = new ArrayList<>();
     String targetValue;
+    static ViewPager footerPager;
+    TextView footer_song_info;
+    TextView footer_song_artist;
+
+
 
     final static ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
 
-
+    /** Print albums in albums list**/
+    public void printAlbums(){
+        for(int i=0;i<albumObjectList.size();i++){
+            Log.v("TAG","albumObjectList.get(i).albumTitle is "+albumObjectList.get(i).albumTitle);
+            Log.v("TAG","albumObjectList.get(i).albumTitle uri is "+albumObjectList.get(i).albumArtURI);
+        }
+    }
 
     @Override
     public void onResume(){
@@ -55,6 +65,12 @@ public class MainActivity extends AppCompatActivity {
         StaticMusicPlayer.setPlayButton((ToggleButton) findViewById(R.id.main_playButton));
         StaticMusicPlayer.setPlayButtonListener();
         super.onResume();
+
+        /** refresh album pager **/
+        footerPager.setCurrentItem(StaticMusicPlayer.currentIndex);
+
+        //footer_song_info.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).songTitle);
+        //footer_song_artist.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).artist);
     }
 
     @Override
@@ -66,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         /**
         String encStr = "not encoded";
         try {
-            encStr = URLEncoder.encode("ASd asd", "UTF_8");
+            encStr = URLEncoder.encode("ASd asd", "UTF-8");
         } catch (UnsupportedEncodingException e) {
             Log.v("TAG","stack trace");
             e.printStackTrace();
@@ -85,12 +101,6 @@ public class MainActivity extends AppCompatActivity {
         //mainList = songObjectList;
         //StaticMusicPlayer.setList(mainList);
 
-        /** Overrite data paths **/
-        //MediaStoreInterface mint = new MediaStoreInterface(ctx);
-        //mint.clearFolder("myalbumart");
-        //mint.dumpAlbumColumns();
-        //mint.setAllAlbumDataToX(); // this operation takes quite a bit of time
-
         /** Populate lists **/
         //scanMedia();
         Cursor songListCursor = GetSongListCursor();
@@ -103,17 +113,28 @@ public class MainActivity extends AppCompatActivity {
         //    Log.v("TAG", "album title is : " + albumObjectList.get(i).albumTitle);
         //}
 
-        /** Make network requests **/
+        /** Make network requests chain starting with last fm**/
+        MediaStoreInterface mint = new MediaStoreInterface(ctx);
+        //mint.clearFolder("myalbumart");
+
+        AlbumArt aa = new AlbumArt(this,albumObjectList);
+        //aa.resetPaths(); // set to album path to null if there are no images
+
+        aa.dumpAlbumColumns();
+
+        LastFmAlbumLookup lf = new LastFmAlbumLookup(this,albumObjectList);
+        //lf.makeRequest();
+
+        //SpotifySolo spy = new SpotifySolo(this,albumObjectList);
+        //spy.makeRequest();
+
+        //ItunesSolo it = new ItunesSolo(this,albumObjectList);
+        //it.makeRequest();
+
         //AlbumArt aa = new AlbumArt(this,albumObjectList);
         //aa.resetPaths(); // set to album path to null if there are no images
         //aa.setAllPathsToNull();
-        //aa.dumpAlbumColumns();
-        AmazonSolo amzn = new AmazonSolo(this, albumObjectList);
-        amzn.makeRequest();
-        ItunesSolo its = new ItunesSolo(this,albumObjectList);
-        its.makeRequest();
-        SpotifySolo spy = new SpotifySolo(this,albumObjectList);
-        spy.makeRequest();
+        //printAlbums();
 
         /** Target value **/
         targetValue = "null";
@@ -126,11 +147,11 @@ public class MainActivity extends AppCompatActivity {
 
         /** Set adapter for main activity **/
         List<Fragment> fragments = getFragments(songObjectList, artistObjectList, albumObjectList);
-        MyPageAdapterMain pageAdapter = new MyPageAdapterMain(getSupportFragmentManager(), fragments);
+        PageAdapterMainActivity pageAdapter = new PageAdapterMainActivity(getSupportFragmentManager(), fragments);
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         //viewPager.setPageTransformer(true, new ZoomOutPageTransformer());
         viewPager.setPageTransformer(true, new DepthPageTransformer());
-        //viewPager.setOffscreenPageLimit(3);
+        viewPager.setOffscreenPageLimit(3);
         viewPager.setAdapter(pageAdapter);
         viewPager.setCurrentItem(3);
 
@@ -149,7 +170,20 @@ public class MainActivity extends AppCompatActivity {
 
         mainFooterListener(songObjectList);
 
-        /** Draw Footer Shadow
+        /** pager for albums **/
+        footerPager = (ViewPager) findViewById(R.id.footerPager);
+        footerPager.setAdapter(new PageAdapterFooter(this));
+        footerPager.setCurrentItem(StaticMusicPlayer.currentIndex);
+
+
+        /** set footer song info **/
+        //footer_song_info = (TextView) findViewById(R.id.footer_song_title);
+        //footer_song_info.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).songTitle);
+        //footer_song_artist = (TextView) findViewById(R.id.footer_song_artist);
+        //footer_song_artist.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).artist);
+
+
+        /** Draw Footer Shadow**/
         float elevation = 2;
         float density = getResources().getDisplayMetrics().density;
 
@@ -157,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         v.setBackgroundDrawable(new RoundRectDrawableWithShadow(
                 getResources(), Color.BLACK, 0,
                 elevation * density, ((elevation + 1) * density) + 1
-        ));**/
+        ));
     }
 
     private List<Fragment> getFragments(ArrayList<SongObject> songObjectList,
@@ -184,11 +218,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 /** dumb album columns **/
-                //MediaStoreInterface mint = new MediaStoreInterface(ctx);
-                //mint.dumpAlbumColumns();
+                MediaStoreInterface mint = new MediaStoreInterface(ctx);
+                mint.dumpAlbumColumns();
 
 
-
+                /*
                 SpotifySolo spotify = new SpotifySolo(MainActivity.this,albumObjectList);
                 ItunesSolo itunes = new ItunesSolo(MainActivity.this,albumObjectList);
                 AmazonSolo amazon = new AmazonSolo(MainActivity.this,albumObjectList);
@@ -214,12 +248,12 @@ public class MainActivity extends AppCompatActivity {
                         Log.v("TAG","amazon request url : " + amazonurl);
                         Log.v("TAG","---------------------------------------------------");
                     }
-                }
+                }*/
 
                 // Open the play panel
-                Intent intent = new Intent(MainActivity.this, PlayPanelActivity.class);
+                Intent intent = new Intent(ActivityMain.this, ActivityPlayPanel.class);
                 //intent.putExtra("songObjectList", songObjectList); //Optional parameters
-                MainActivity.this.startActivity(intent);
+                ActivityMain.this.startActivity(intent);
                 //overridePendingTransition(R.anim.slide_up, R.anim.dont_move);
 
                 // So here, if a a song is already playing, then we want to open
@@ -301,6 +335,9 @@ public class MainActivity extends AppCompatActivity {
                     // define title, duration, path, albumId, title properties
                     final String albumTitle = mCursor.getString(0);
                     songObject.albumTitle = albumTitle;
+
+
+
                     final String songTitle = mCursor.getString(2);
                     songObject.songTitle = songTitle;
                     final String songPath = mCursor.getString(3);
@@ -337,13 +374,13 @@ public class MainActivity extends AppCompatActivity {
                             if(albumObjectList.get(i).albumId == Integer.parseInt(songObject.albumID)){
                                 albumObjectList.get(i).songObjectList.add(songObject);
                                 songAdded = true;
-                                Log.v("TAG", "song added");
+                                //Log.v("TAG", "song added");
                                 break;
                             }
                         }
 
                         if(songAdded == false){
-                            Log.v("TAG", "new album created");
+                            //Log.v("TAG", "new album created");
                             albumObjectList.add(new AlbumObject(songObject));
                         }
 

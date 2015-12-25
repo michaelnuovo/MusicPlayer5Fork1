@@ -47,10 +47,10 @@ android:layout_height="match_parent"
     <!-- View Pager -->
     <android.support.v4.view.ViewPager
         android:id="@+id/viewpager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:background="#191919"
+        android:background="#000000"
         />
 
 </android.support.design.widget.CoordinatorLayout>

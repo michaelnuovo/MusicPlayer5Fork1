@@ -9,14 +9,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import java.util.ArrayList;
 
-public class MyListAdapterArtists extends ArrayAdapter<ArtistObject> {
+public class AdapterArtists extends ArrayAdapter<ArtistObject> {
 
 
     Context context;
     int layoutResourceId;
     ArrayList<ArtistObject> artistObjectList;
 
-    public MyListAdapterArtists(Context context, int layoutResourceId, ArrayList<ArtistObject> artistObjectList) {
+    public AdapterArtists(Context context, int layoutResourceId, ArrayList<ArtistObject> artistObjectList) {
 
         super(context, layoutResourceId, artistObjectList);
         this.layoutResourceId = layoutResourceId;

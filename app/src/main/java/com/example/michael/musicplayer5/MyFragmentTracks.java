@@ -1,10 +1,8 @@
 package com.example.michael.musicplayer5;
 
-import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,15 +18,16 @@ public class MyFragmentTracks extends Fragment implements MyInterface {
 
     /** Fragment Variables **/
     public static final String EXTRA_MESSAGE = "EXTRA_MESSAGE";
-    static ListView listView;
-    static ArrayList<SongObject> songList;
+    public static ListView listView;
+    //public static ProperListView listView;
+    static ArrayList<SongObject> songObjectList;
 
     static TextView currentTitleView;
     static TextView currentArtistView;
 
     LinearLayout TitlePanel;
 
-    static MyListAdapterTracks adapter;
+    static AdapterTracks adapter;
 
     @Override
     public void myTask() {
@@ -73,16 +72,22 @@ public class MyFragmentTracks extends Fragment implements MyInterface {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        songList = getArguments().getParcelableArrayList(EXTRA_MESSAGE);
+        songObjectList = getArguments().getParcelableArrayList(EXTRA_MESSAGE);
 
         View rootView = inflater.inflate(R.layout.fragment_layout_tracks, container, false);
 
         listView = (ListView) rootView.findViewById(R.id.fragmentListView);
 
-        adapter = new MyListAdapterTracks(getActivity(), R.layout.item_list_view, songList, getActivity());
+        //listView.setFastScrollAlwaysVisible(true);
+        //listView.setScrollBarStyle(R.drawable.scroll_style_custom);
+
+        //View header = inflater.inflate(R.layout.list_header, container, false);
+        //listView.addHeaderView(header);
+
+        adapter = new AdapterTracks(getActivity(), R.layout.item_list_view2, songObjectList);
         listView.setAdapter(adapter);
 
-        UpdateAdapters.getInstance().setAdapterOne(adapter);
+        UpdateAdapters.getInstance().setAdapterOne(adapter,listView);
 
 
 
@@ -113,7 +118,7 @@ public class MyFragmentTracks extends Fragment implements MyInterface {
         //Pass play button to static media player
         StaticMediaPlayer_OLD.SetButtonsMainActivity(
                 (ToggleButton) rootView.findViewById(R.id.playButton),
-                songList
+                songObjectList
         );
 
         //Set play button listener
@@ -145,7 +150,7 @@ public class MyFragmentTracks extends Fragment implements MyInterface {
 
                 // Open the play panel activity from this fragment
 
-                Intent intent = new Intent(getActivity(), PlayPanelActivity.class);
+                Intent intent = new Intent(getActivity(), ActivityPlayPanel.class);
                 startActivity(intent);
 
                 /** original code from main activity
@@ -173,10 +178,10 @@ public class MyFragmentTracks extends Fragment implements MyInterface {
 
 
 
-                StaticMusicPlayer.tryToPlaySong(songList.get(arg2)); // arg2 is a sonObject
+                StaticMusicPlayer.tryToPlaySong(songObjectList.get(arg2)); // arg2 is a sonObject
 
 
-                Intent intent = new Intent(getActivity(), PlayPanelActivity.class);
+                Intent intent = new Intent(getActivity(), ActivityPlayPanel.class);
                 startActivity(intent);
 
 

@@ -10,19 +10,32 @@
         android:layout_width="match_parent"
        android:layout_above="@+id/activity_main_footer"/>
 
+    <View
+        android:id="@+id/shadowView"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_above="@id/activity_main_footer"/>
+<!--
+    <View
+        android:id="@id/footerborder"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#FF4081"
+        android:layout_above="@id/activity_main_footer"/> -->
+
     <include layout="@layout/activity_main_footer"
         android:id="@id/activity_main_footer"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
         android:layout_width="match_parent"
         android:layout_alignParentBottom="true"/>
 <!--
     <include layout="@layout/shadow_view"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_above="@+id/footer"/>
+        android:layout_above="@id/activity_main_footer"/>
 
 
-    <include layout="@layout/footer_wrapper"/>
-    -->
+    <include layout="@layout/footer_wrapper"/>-->
+
 
 </RelativeLayout>

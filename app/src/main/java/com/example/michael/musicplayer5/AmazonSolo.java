@@ -31,6 +31,9 @@ import java.util.Map;
  */
 public class AmazonSolo {
 
+    public void useApi () {
+        //use another api
+    }
 
     Context ctx;
     Activity activity;
@@ -55,8 +58,11 @@ public class AmazonSolo {
         return new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                // Do whatever you want to do with error.getMessage();
-                Log.v("TAG", "error.getMessage() is: " + error.getMessage());
+                Log.v("TAG","Aamzon VolleyError error : "+error);
+
+                if(error == null || error.equals("null")){
+                    useApi();
+                }
             }
         };
     }
@@ -69,7 +75,8 @@ public class AmazonSolo {
                 for(int i=0;i<requestList.size();i++){
                     if(requestList.get(i).albumArtURI.equals("null")){
                         fireRequest(requestList.get(i));
-                        try {
+
+                        try {//We need a second pause so Amazon doesn't throttle our traffic
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -96,9 +103,7 @@ public class AmazonSolo {
                 Log.v("TAG","Making request "+url);
                 Log.v("TAG", "album is " + albumObject.albumTitle);
 
-                Itunes.getRequestQueue();
-
-
+                ItunesSolo.getRequestQueue();
 
                 StringRequest myReq = new StringRequest(
                         Request.Method.GET,
@@ -114,90 +119,78 @@ public class AmazonSolo {
                                 //final String imageUrl = "";
                                 final String imageUrl = "http://images.amazon.com/images/P/" + asinValue + ".01._SCLZZZZZZZ_.jpg";
 
-                              if(asinValue == ""){
+                              if(null == response || response.equals("") || null == asinValue || asinValue.equals("")){
 
-                                    Log.v("TAG","-------------------------------------");
-                                    Log.v("TAG","There is no ASIN number, lets try iTunes");
-                                    Log.v("TAG","parse value is: "+asinValue);
-                                    Log.v("TAG","the amazon album title is: "+albumObject.albumTitle);
-                                    Log.v("TAG","the xml url is: "+url);
-                                    Log.v("TAG","the image url is: "+imageUrl);
-                                    Log.v("TAG","-------------------------------------");
+                                  useApi();//use another api
 
-                                    //Itunes itunes = new Itunes(songObject, songObject.albumArtURI,albumId,ctx, albumTitle, artist,activity);
-                                    //itunes.makeRequest();
+                              } else {
 
-                               }
+                                  /** this code lags the hell out of my application for some reason
+                                  try {
+                                      Thread.sleep(1000); //here im pausing the current thread of a whole second
+                                  } catch (InterruptedException e) {
+                                      e.printStackTrace();
+                                  }**/
 
-                                new Thread() {
-                                    public void run() {
-                                        try {
-                                            Thread.sleep(1000);
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                }.start();
+                                  ImageRequest myImageReq = new ImageRequest(imageUrl, new Response.Listener<Bitmap>() {
+                                      @Override
+                                      public void onResponse(final Bitmap response) {
+                                          new Thread() {
+                                              public void run() {
 
-                                //if(!asinValue.equals("")){ //If there is an ASIN number do this, else don't do it
-                                    ImageRequest myImageReq = new ImageRequest(imageUrl, new Response.Listener<Bitmap>() {
-                                        @Override
-                                        public void onResponse(final Bitmap response) {
-                                            new Thread() {
-                                                public void run() {
+                                                  //If there is no image, Volley return a 1x1 px black bitmap as default
+                                                  if(response.getHeight() ==1 && response.getWidth() == 1){
+                                                      Log.v("TAG","bit map is a deafault response");
+                                                      //use anotehr thigny
+                                                  } else {
 
-                                                    //If there is no image, Volley return a 1x1 px black bitmap as default
-                                                    if(response.getHeight() ==1 && response.getWidth() == 1){
-                                                        Log.v("TAG","bit map is a deafault response");
-                                                        //use anotehr thigny
-                                                    } else {
+                                                      Bitmap emptyBitmap = Bitmap.createBitmap(response.getWidth(), response.getHeight(), response.getConfig());
+                                                      if (response.sameAs(emptyBitmap)) {
+                                                          Log.v("TAG","bit map is blank");
+                                                      }
 
-                                                        Bitmap emptyBitmap = Bitmap.createBitmap(response.getWidth(), response.getHeight(), response.getConfig());
-                                                        if (response.sameAs(emptyBitmap)) {
-                                                            Log.v("TAG","bit map is blank");
-                                                        }
+                                                      // Save the bitmap to disk, return an image path
+                                                      SaveBitMapToDisk saveImage = new SaveBitMapToDisk();
+                                                      saveImage.SaveImage(response, "myalbumart");
+                                                      String imagePathData = saveImage.getImagePath();
 
-                                                        // Save the bitmap to disk, return an image path
-                                                        SaveBitMapToDisk saveImage = new SaveBitMapToDisk();
-                                                        saveImage.SaveImage(response, "myalbumart");
-                                                        String imagePathData = saveImage.getImagePath();
+                                                      // Update the image path to Android meta data
+                                                      MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
+                                                      mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObject.albumId), imagePathData);
 
-                                                        // Update the image path to Android meta data
-                                                        MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
-                                                        mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObject.albumId), imagePathData);
+                                                      Log.v("TAG", "Writing album : " + albumObject.albumTitle);
+                                                      Log.v("TAG","Writing path : "+imagePathData);
 
-                                                        Log.v("TAG", "Writing album : " + albumObject.albumTitle);
-                                                        Log.v("TAG","Writing path : "+imagePathData);
+                                                      //update uri path
+                                                      albumObject.albumArtURI = imagePathData;
 
-                                                        //update uri path
-                                                        albumObject.albumArtURI = imagePathData;
+                                                      //up uri paths of song objects
+                                                      for(int i=0;i<albumObject.songObjectList.size();i++){
+                                                          albumObject.songObjectList.get(i).albumArtURI = imagePathData;
+                                                      }
 
-                                                        //up uri paths of song objects
-                                                        for(int i=0;i<albumObject.songObjectList.size();i++){
-                                                            albumObject.songObjectList.get(i).albumArtURI = imagePathData;
-                                                        }
+                                                      // Update all adapters (not yet implemented)
+                                                      Log.v("TAG","value of activity is "+activity);
+                                                      activity.runOnUiThread(new Runnable() {
+                                                          @Override
+                                                          public void run() {
 
-                                                        // Update all adapters (not yet implemented)
-                                                        Log.v("TAG","value of activity is "+activity);
-                                                        activity.runOnUiThread(new Runnable() {
-                                                            @Override
-                                                            public void run() {
+                                                              Log.v("TAG","updating adapters ");
+                                                              UpdateAdapters.getInstance().update();
 
-                                                                Log.v("TAG","updating adapters ");
-                                                                UpdateAdapters.getInstance().update();
+                                                          }
+                                                      });
+                                                  }
+                                              }
+                                          }.start();
+                                      }
+                                  }, 0, 0, null, createMyReqErrorListener(imageUrl));
 
-                                                            }
-                                                        });
-                                                    }
+                                  ItunesSolo.mRequestQueue.add(myImageReq);
+                              }
 
 
-                                                }
-                                            }.start();
-                                        }
-                                    }, 0, 0, null, createMyReqErrorListener(imageUrl));
 
-                                    Itunes.mRequestQueue.add(myImageReq);
-                                //}
                             }
                         },
                         new Response.ErrorListener()
@@ -219,7 +212,7 @@ public class AmazonSolo {
 
 
 
-                Itunes.mRequestQueue.add(myReq);
+                ItunesSolo.mRequestQueue.add(myReq);
                 //mRequestQueue.add(myReq);
 
 

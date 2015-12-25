@@ -8,8 +8,8 @@
     android:id="@+id/activity_play_panel">
 
     <include layout="@layout/activity_play_panel_pager"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"/>
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"/>
 
     <include layout="@layout/activity_play_panel_track_info"
         android:layout_height="wrap_content"

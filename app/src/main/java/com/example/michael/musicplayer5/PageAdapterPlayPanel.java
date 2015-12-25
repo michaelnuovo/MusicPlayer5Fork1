@@ -3,33 +3,25 @@ package com.example.michael.musicplayer5;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 //PagerAdapter
 //FragmentStatePagerAdapter
 
-public class MyPagerAdapterPlay extends PagerAdapter {
+public class PageAdapterPlayPanel extends PagerAdapter {
 
     private Context mContext;
     private ArrayList<SongObject> songObjectsList = StaticMusicPlayer.songObjectList;
     private SongObject songObject;
 
-    public MyPagerAdapterPlay(Context context) {
+    public PageAdapterPlayPanel(Context context) {
 
         //http://stackoverflow.com/questions/17158817/extending-fragmentpageradapter-has-issues-with-a-missing-super-constructor
         //super(fm);
@@ -46,7 +38,10 @@ public class MyPagerAdapterPlay extends PagerAdapter {
         songObject = songObjectsList.get(position);
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.play_pager_layout, collection, false);
+        ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.pager_play_panel, collection, false); //a view group is a layout, a view is a child of a view group
+
+        //ViewGroup layout2 = (ViewGroup) inflater.inflate(R.layout.footer_album_layout, collection, false); //the second layout I want to adapt to
+
         collection.addView(layout);
 
         TextView tx = (TextView) layout.findViewById(R.id.pagertest);

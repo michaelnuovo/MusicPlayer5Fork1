@@ -1,9 +1,7 @@
 package com.example.michael.musicplayer5;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
-import android.widget.ImageView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -11,11 +9,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
-import com.squareup.picasso.Picasso;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class VolleyClass {
@@ -23,8 +20,8 @@ public class VolleyClass {
     String url = "https://itunes.apple.com/search?term=michael+jackson";
     public static RequestQueue requestQueue = null;
     int listIndex;
-    ArrayList<SongObject> songObjectList = MainActivity.mainList;
-    MyListAdapterTracks adapter = MyFragmentTracks.adapter;
+    ArrayList<SongObject> songObjectList = ActivityMain.mainList;
+    AdapterTracks adapter = MyFragmentTracks.adapter;
     private Activity activity;
 
     public VolleyClass(int listIndex, Activity activity){
@@ -37,7 +34,7 @@ public class VolleyClass {
     public static void getRequestQueue() {
 
         if (requestQueue == null) {
-            requestQueue = Volley.newRequestQueue(MainActivity.getAppContext());
+            requestQueue = Volley.newRequestQueue(ActivityMain.getAppContext());
         } else {
             //do nothing
         }

@@ -5,10 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +13,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -25,13 +21,11 @@ import com.android.volley.toolbox.Volley;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
+public class AdapterTracks extends ArrayAdapter<SongObject>  {
 
     Context context;
     int layoutResourceId;
@@ -39,23 +33,24 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
     Activity activity;
 
 
+
     public static RequestQueue mRequestQueue;
 
     public static RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(MainActivity.getAppContext());
+            mRequestQueue = Volley.newRequestQueue(ActivityMain.getAppContext());
         }
         return mRequestQueue;
     }
 
 
-    public MyListAdapterTracks(Context context, int layoutResourceId, ArrayList<SongObject> songObjectList, Activity activity) {
+    public AdapterTracks(Context ctx, int layoutResourceId, ArrayList<SongObject> songObjectList) {
 
-        super(context, layoutResourceId, songObjectList);
+        super(ctx, layoutResourceId, songObjectList);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.songObjectList = songObjectList;
-        this.activity = activity;
+        this.activity = (Activity) ctx;
 
     }
 
@@ -83,7 +78,13 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
 
-            convertView = inflater.inflate(R.layout.item_list_view, parent, false);
+
+
+
+
+                convertView = inflater.inflate(R.layout.item_list_view2, parent, false);
+
+           // convertView = inflater.inflate(R.layout.item_list_view2, parent, false);
             convertView.setTag(viewHolder);
 
             // if an existing view is being reused
@@ -99,7 +100,7 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         viewHolder.albumArt = (ImageView) convertView.findViewById(R.id.album_art);
         //viewHolder.duration = (TextView) convertView.findViewById(R.id.duration);
         // Reset the image so we don't get overlap from recycling
-        viewHolder.albumArt.setBackgroundResource(R.drawable.blackcircle);
+        //viewHolder.albumArt.setBackgroundResource(R.drawable.blackcircle);
         // Set values to referenced view objects
         //viewHolder.album.setText(songObject.album);
         viewHolder.artist.setText(songObject.artist);
@@ -116,12 +117,49 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
         //if(songObject.albumArtURI != null){
         // If the albumArtURI exists, then Picasso will use it
 
+        /*
         if(songObject.albumArtURI != null) {
             File f = new File(songObject.albumArtURI);
             Picasso.with(viewHolder.albumArt.getContext())
                     .load(f)
                     .transform(new CircleTransform())
                     .placeholder(R.drawable.blackcircle).fit().centerCrop()
+                    .into(viewHolder.albumArt);
+        }*/
+
+
+        if(songObject.albumArtURI != null){
+
+            File f = new File(songObject.albumArtURI);
+
+
+
+            /** CODE WITHOUT CIRCULAR TRANSFORM
+             Picasso.with(viewHolder.albumArt.getContext())
+             .load(f)
+             .placeholder(R.drawable.grayalbumart).fit().centerCrop()
+             .into(viewHolder.albumArt);**/
+
+            /** CODE WITH CIRCULAR TRANSFORM **/
+            Picasso.with(viewHolder.albumArt.getContext())
+                    .load(f)
+                    .transform(new CircleTransform())
+                    .placeholder(R.drawable.blackcircle).fit().centerCrop()
+                    .into(viewHolder.albumArt);
+        } else {
+
+            /** CODE WITHOUT CIRCULAR TRANSFORM
+             Picasso.with(viewHolder.albumArt.getContext())
+             .load(albumObject.albumArtURI)
+             .placeholder(R.drawable.grayalbumart).fit().centerCrop()
+             .into(viewHolder.albumArt);**/
+
+            /** CODE WITH CIRCULAR TRANSFORM**/
+
+            Picasso.with(viewHolder.albumArt.getContext())
+                    .load(R.drawable.blackcircle)
+                    .transform(new CircleTransform())
+                    .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);
         }
 
@@ -145,6 +183,12 @@ public class MyListAdapterTracks extends ArrayAdapter<SongObject>  {
                     .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);
         }*/
+
+        //if (position % 2 == 0) {
+        //    convertView.setBackgroundResource(R.color.dark_gray);
+       // } else {
+        //    convertView.setBackgroundResource(R.color.light_gray);
+       // }
 
         return convertView;
     }

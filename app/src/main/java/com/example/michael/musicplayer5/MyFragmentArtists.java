@@ -37,7 +37,7 @@ public class MyFragmentArtists extends Fragment {
 
         listView = (ListView) rootView.findViewById(R.id.fragmentListViewArtists);
 
-        MyListAdapterArtists adapter = new MyListAdapterArtists(getActivity(), R.layout.item_list_view_artists, artistObjectList);
+        AdapterArtists adapter = new AdapterArtists(getActivity(), R.layout.item_list_view_artists, artistObjectList);
         listView.setAdapter(adapter);
 
         Log.v("TAG", "artist adapter value is " + String.valueOf(adapter));

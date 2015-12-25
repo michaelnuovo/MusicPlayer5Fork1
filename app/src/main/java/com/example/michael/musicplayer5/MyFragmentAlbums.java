@@ -37,7 +37,7 @@ public class MyFragmentAlbums extends Fragment {
 
         gridView = (GridView) rootView.findViewById(R.id.gridView);
 
-        MyGridViewAdapter gridAdapter = new MyGridViewAdapter(getActivity(), R.layout.item_grid_view, albumObjectList);
+        AdapterGridView gridAdapter = new AdapterGridView(getActivity(), R.layout.item_grid_view, albumObjectList);
         gridView.setAdapter(gridAdapter);
 
         Log.v("TAG","gridAdapter value is "+String.valueOf(gridAdapter));

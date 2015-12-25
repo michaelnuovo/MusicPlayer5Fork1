@@ -2,4 +2,16 @@
     <string name="app_name">MusicPlayer5</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_play_panel">PlayPanelActivity</string>
+
+    <!--scroll bar styling tutorial
+    http://androidopentutorials.com/android-vertical-scrollbar-styling/
+    -->
+
+    <string name="second_name">Second Activity</string>
+     <string name="scrollbar_text">Android Open Tutorials. Android Programming. Android Tutorials.
+        Android Examples. Android SQLite. Android Layouts, Menus, Action Bar, ViewPager. Image Gallery.
+        Data Storage. SharedPreferences, Internal and External Storage. ListView, GridView, RelativeLayout,
+        LinearLayout, Scrollbar, Spinner, Dialog, CAB, Styling, ImageView blink, TextSwitcher, Library Projects,
+        How to import Android Library Projects, Progress Bar, Animation, Android Tools and many more.</string>
+
 </resources>

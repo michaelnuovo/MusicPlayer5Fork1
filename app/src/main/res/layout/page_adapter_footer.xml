@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center">
+
+    <!-- this makes it so the text cuts off at 200 dp-->
+    <LinearLayout
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/footer_song_title_pager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test"
+            android:textColor="#ffffff"
+
+            android:textSize="14dp"
+            android:singleLine="true"
+            />
+
+        <TextView
+            android:id="@+id/footer_song_artist_pager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test"
+            android:textColor="#AEAEAE"
+
+            android:textSize="10dp"
+            android:singleLine="true"
+            />
+
+    </LinearLayout>
+
+
+
+</LinearLayout>

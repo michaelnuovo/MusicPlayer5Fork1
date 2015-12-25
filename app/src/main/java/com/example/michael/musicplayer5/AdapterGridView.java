@@ -16,14 +16,14 @@ import java.util.ArrayList;
 /**
  * Created by michael on 11/11/15.
  */
-public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
+public class AdapterGridView extends ArrayAdapter<AlbumObject> {
 
 
     Context context;
     int layoutResourceId;
     ArrayList<AlbumObject> albumObjectList;
 
-    public MyGridViewAdapter(Context context, int layoutResourceId, ArrayList<AlbumObject> albumObjectList) {
+    public AdapterGridView(Context context, int layoutResourceId, ArrayList<AlbumObject> albumObjectList) {
 
         super(context, layoutResourceId, albumObjectList);
         this.layoutResourceId = layoutResourceId;
@@ -46,8 +46,6 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
 
         // Get the data item for this position
         AlbumObject albumObject = albumObjectList.get(position);
-
-
 
         ViewHolder viewHolder; // view lookup cache stored in tag
 
@@ -81,6 +79,8 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
         //viewHolder.title.setText(songObject.title);
         //viewHolder.duration.setText(FormatTime(songObject.duration));
 
+       // viewHolder.albumArt.setBackgroundResource(R.drawable.blackcircle);
+
         //viewHolder.albumArt.setImageBitmap(BitmapFactory.decodeFile(songObject.albumArtURI));
 
         // Set a temporary gray background to the image view
@@ -95,10 +95,8 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
 
         if(albumObject.albumArtURI != null){
 
-            File f=null;
-            if(null != albumObject.songObjectList && 0 != albumObject.songObjectList.size()){
-                f = new File(albumObject.songObjectList.get(0).albumArtURI);
-            }
+            File f = new File(albumObject.songObjectList.get(0).albumArtURI);
+
 
 
             /** CODE WITHOUT CIRCULAR TRANSFORM
@@ -124,7 +122,7 @@ public class MyGridViewAdapter extends ArrayAdapter<AlbumObject> {
             /** CODE WITH CIRCULAR TRANSFORM**/
 
             Picasso.with(viewHolder.albumArt.getContext())
-                    .load(albumObject.albumArtURI)
+                    .load(R.drawable.blackcircle)
                     //.transform(new CircleTransform())
                     .placeholder(R.drawable.blackcircle)
                     .into(viewHolder.albumArt);

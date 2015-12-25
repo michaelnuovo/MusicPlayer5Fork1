@@ -19,28 +19,37 @@ public class SpotifySolo {
 
     Context ctx;
     Activity activity;
-    ArrayList<AlbumObject> requestList;
+    ArrayList<AlbumObject> albumObjectList;
 
-    public SpotifySolo(Context ctx, ArrayList<AlbumObject> requestList){
+    public void useApi () {
+
+        //use another api
+        //ItunesSolo its = new ItunesSolo(ctx,albumObjectList);
+        //its.makeRequest();
+        AmazonSolo am = new AmazonSolo(ctx,albumObjectList);
+        am.makeRequest();
+    }
+
+    public SpotifySolo(Context ctx, ArrayList<AlbumObject> albumObjectList){
         this.ctx=ctx;
-        this.requestList=requestList;
+        this.albumObjectList=albumObjectList;
         this.activity = (Activity) ctx;
     }
 
     /** Make request **/
     public void makeRequest(){
-        Log.v("TAG","Spot is making req");
+        Log.v("TAG", "Spot is making req");
         new Thread() {
             public void run() {
-                for(int i=0;i<requestList.size();i++){
-                    if(requestList.get(i).albumArtURI.equals("null")){
-                        fireRequest(requestList.get(i));
+                for(int i=0;i<albumObjectList.size();i++){
+                    if(albumObjectList.get(i).albumArtURI.equals("null")){
+                        fireRequest(albumObjectList.get(i));
+                        /**
                         try {
                             Thread.sleep(1);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                        }
-
+                        }**/
                     }
                 }
             }
@@ -62,7 +71,7 @@ public class SpotifySolo {
 
 
 
-        Itunes.getRequestQueue();
+        ItunesSolo.getRequestQueue();
 
         GsonRequest<SpotifyAlbumInfo> myReq = new GsonRequest<>(
                 Request.Method.GET,
@@ -70,8 +79,8 @@ public class SpotifySolo {
                 SpotifyAlbumInfo.class,
                 null,
                 createMyReqSuccessListener(jsonObjectArrayUrl, albumObject),
-                createMyReqErrorListener(jsonObjectArrayUrl));
-        Itunes.mRequestQueue.add(myReq);
+                createMyReqErrorListener(jsonObjectArrayUrl, albumObject));
+        ItunesSolo.mRequestQueue.add(myReq);
     }
 
     /** Static request queue (we don't want multiple request queue objects)
@@ -83,13 +92,29 @@ public class SpotifySolo {
      }**/
 
     /** custom error response listener **/
-    private Response.ErrorListener createMyReqErrorListener(final String url) {
+    private Response.ErrorListener createMyReqErrorListener(final String url, final AlbumObject albumObject) {
         return new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                // Do whatever you want to do with error.getMessage();
-                Log.v("TAG", "spotify error.getMessage() is " + error.getMessage());
-                Log.v("TAG", "url is " + url);
+
+                /** Notes **/
+                //The problem here is we are tabulating number of error requests for both meta data responses and image responses, but that's not a biggy
+
+                /** Error info **/
+                Log.v("TAG", "error.getMessage() : " + error.getMessage());
+                Log.v("TAG", "albumObject.albumTitle  : " + albumObject.albumTitle);
+                Log.v("TAG", "albumObject.albumArtist : " + albumObject.albumArtist);
+                //Log.v("TAG", "getUrl(String album)    : " + getUrl(albumObject.albumTitle, albumObject.albumArtist));
+
+                /** Retry logic **/
+                albumObject.spotifyRequestErrorNumber += 1;
+                if(albumObject.spotifyRequestErrorNumber < 5) { //let try five times
+                    makeRequest();
+                } else {
+                    Log.v("TAG","Using spotify");
+                    albumObject.spotifyRequestErrorNumber =0;
+                    useApi();
+                }
             }
         };
     }
@@ -112,7 +137,7 @@ public class SpotifySolo {
                 if(response.albums.items.size() == 0){
                     Log.v("TAG","No it does not exist on Spotify");
                     Log.v("TAG","The album is "+albumObject.albumTitle);
-                    Log.v("TAG","Trying Amazon...");
+                    Log.v("TAG", "Trying Amazon...");
                 } else {
                     imageUrl = response.albums.items.get(0).images.get(0).url; // get the first album url
                     Log.v("TAG","Yes, it does exist on Spotify.");
@@ -121,23 +146,18 @@ public class SpotifySolo {
                 }
 
                 /** Try to use native image embedded in the music file **/
-                if(null == imageUrl){
+                if(null == imageUrl || imageUrl.equals("")){
 
-                    //its.makeRequest();
-                }
+                    useApi(); //use another api
 
-                new Thread() {
-                    public void run() {
-                        try {
-                            Thread.sleep(1);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }.start();
+                } else {
 
-                /** Download image **/
-                if(null != imageUrl){ // if imageUrl is not null, do this
+                    /**
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }**/
 
                     /** Make an image request **/
                     ImageRequest myImageReq = new ImageRequest(imageUrl, new Response.Listener<Bitmap>() {
@@ -146,70 +166,78 @@ public class SpotifySolo {
                         /** Image request onResponse method **/
                         public void onResponse(final Bitmap response) {
 
-                            new Thread() {
-                                public void run() {
+                            if(response.getHeight() ==1 && response.getWidth() == 1){ //If there is no image, Volley return a 1x1 px black bitmap as default
 
-                                    // Save the bitmap to disk, return an image path
-                                    SaveBitMapToDisk saveImage = new SaveBitMapToDisk();
-                                    saveImage.SaveImage(response, "myalbumart");
-                                    String imagePathData = saveImage.getImagePath();
+                                useApi(); //use a different api
 
-                                    // Update the image path to Android meta data
-                                    MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
-                                    mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObject.albumId), imagePathData);
+                            } else {
 
-                                    //update uri path
-                                    albumObject.albumArtURI = imagePathData;
+                                new Thread() {
+                                    public void run() {
 
-                                    //up uri paths of song objects
-                                    for(int i=0;i<albumObject.songObjectList.size();i++){
-                                        albumObject.songObjectList.get(i).albumArtURI = imagePathData;
-                                    }
+                                        // Save the bitmap to disk, return an image path
+                                        SaveBitMapToDisk saveImage = new SaveBitMapToDisk();
+                                        saveImage.SaveImage(response, "myalbumart");
+                                        String imagePathData = saveImage.getImagePath();
 
-                                    // Update all adapters (not yet implemented)
-                                    Log.v("TAG","value of activity is "+activity);
-                                    activity.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
+                                        // Update the image path to Android meta data
+                                        MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
+                                        mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObject.albumId), imagePathData);
 
-                                            Log.v("TAG","updating adapters for spotify "+activity);
-                                            UpdateAdapters.getInstance().update();
+                                        //update uri path
+                                        albumObject.albumArtURI = imagePathData;
 
+                                        //up uri paths of song objects
+                                        for(int i=0;i<albumObject.songObjectList.size();i++){
+                                            albumObject.songObjectList.get(i).albumArtURI = imagePathData;
                                         }
-                                    });
+
+                                        // Update all adapters (not yet implemented)
+                                        Log.v("TAG","value of activity is "+activity);
+                                        activity.runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+
+                                                Log.v("TAG","updating adapters for spotify "+activity);
+                                                UpdateAdapters.getInstance().update();
+
+                                            }
+                                        });
 
 
-                                    //SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);
-                                    //sbmruri.run();
+                                        //SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);
+                                        //sbmruri.run();
 
-                                    /** MediaStoreInterface
-                                     String folderName = "MusicPlayer5";
-                                     MediaStoreInterface msi = new MediaStoreInterface(context);
-                                     msi.clearFolder(folderName);
-                                     msi.createFolder(folderName);
-                                     msi.saveBitMapToFolderWithRandomNumericalName(folderName, response);
-                                     String imagePath = msi.getLastImagePath();
-                                     msi.updateAndroidWithImagePath(imagePath, songObject.albumID);
-                                     msi.dumpCursor(songObject.albumID);**/
+                                        /** MediaStoreInterface
+                                         String folderName = "MusicPlayer5";
+                                         MediaStoreInterface msi = new MediaStoreInterface(context);
+                                         msi.clearFolder(folderName);
+                                         msi.createFolder(folderName);
+                                         msi.saveBitMapToFolderWithRandomNumericalName(folderName, response);
+                                         String imagePath = msi.getLastImagePath();
+                                         msi.updateAndroidWithImagePath(imagePath, songObject.albumID);
+                                         msi.dumpCursor(songObject.albumID);**/
 
-                                    // So here I need to update the albumART URIs by (a) writing to the meta data and (b) updating the current song object URI
-                                    // that way the URI is there on application restart, but also now so that Picasso has an image source to adapt to the list
+                                        // So here I need to update the albumART URIs by (a) writing to the meta data and (b) updating the current song object URI
+                                        // that way the URI is there on application restart, but also now so that Picasso has an image source to adapt to the list
 
-                                    //notifyDataSetChanged(); // Notify the this list adapter class that the underlying data has changed
-                                }
-                            }.start();
+                                        //notifyDataSetChanged(); // Notify the this list adapter class that the underlying data has changed
+                                    }
+                                }.start();
+                            }
                         }
-                    }, 0, 0, null, createMyReqErrorListener(imageUrl));
+                    }, 0, 0, null, createMyReqErrorListener(imageUrl, albumObject));
 
-                    Itunes.mRequestQueue.add(myImageReq);
+                    ItunesSolo.mRequestQueue.add(myImageReq);
+
                 }
             }
         };
     }
 
-
-
     static public String spotifyUrl(String artist, String album){
+
+        // this works https://api.spotify.com/v1/search?q=tania%20bowra&type=album
 
         //Web API Base URL: https://api.spotify.com
         //https://developer.spotify.com/web-api/endpoint-reference/
@@ -224,6 +252,13 @@ public class SpotifySolo {
         //Log.v("TAG","splitNameAlbum is "+splitNameAlbum);
 
         String jsonUrl = "https://api.spotify.com/v1/search?q=album:arrival%20artist:abba&type=album" + "&limit=50"; // limit is 50 per page
+
+        //String jsonUrl = "https://api.spotify.com/v1/q=album:gold%20artist:abba&type=album"; // limit is 50 per page
+
+        //the%20essence%20of%20charlie%20parker
+
+        //q=album:gold%20artist:abba&type=album
+
         jsonUrl = jsonUrl.replace("abba",splitNameArtist);
         jsonUrl = jsonUrl.replace("arrival",splitNameAlbum);
 

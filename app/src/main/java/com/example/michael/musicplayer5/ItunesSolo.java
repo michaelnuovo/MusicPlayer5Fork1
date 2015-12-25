@@ -19,30 +19,31 @@ import com.android.volley.toolbox.Volley;
 import java.util.ArrayList;
 
 /**
- * This class allows the user to make a json request.
- * After the json request is made, and if the request is successful,
- * this class will parse the json request for an image url.
- * The parsed image url will be the first image url in the first json object of a json object array.
- * This class will then make an image request using the image url.
- * This class will then save that image to disk with another class.
- * This class will also update the filepath to the Android meta data using another class.
- * This class will also update the application adapters using another class notifying them of the underling file path change.
+ * The problem with iTunes api is
+ * it only allows search and match,
+ * but not look-up.
  */
-public class ItunesSolo {
 
+public class ItunesSolo {
 
     public static RequestQueue mRequestQueue;
     Context ctx;
     Activity activity;
-    ArrayList<AlbumObject> requestList;
+    ArrayList<AlbumObject> albumObjectList;
+
+    public void useApi () {
+        //use another api
+        AmazonSolo amzn = new AmazonSolo(ctx, albumObjectList);
+        //amzn.makeRequest();
+    }
 
     //AmazonSolo amzn;
 
-    public ItunesSolo(Context ctx, ArrayList<AlbumObject> requestList){
+    public ItunesSolo(Context ctx, ArrayList<AlbumObject> albumObjectList){
 
         this.ctx=ctx;
         this.activity = (Activity) ctx;
-        this.requestList=requestList;
+        this.albumObjectList=albumObjectList;
 
         //amzn = new AmazonSolo(ctx, requestList);
     }
@@ -53,15 +54,15 @@ public class ItunesSolo {
         Log.v("TAG","intunes is making req");
         new Thread() {
             public void run() {
-                for(int i=0;i<requestList.size();i++){
-                    if(requestList.get(i).albumArtURI.equals("null")){
-                        fireRequest(requestList.get(i));
+                for(int i=0;i<albumObjectList.size();i++){
+                    if(albumObjectList.get(i).albumArtURI.equals("null")){
+                        fireRequest(albumObjectList.get(i));
+                        /**
                         try {
                             Thread.sleep(1);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                        }
-
+                        }**/
                     }
                 }
             }
@@ -96,7 +97,7 @@ public class ItunesSolo {
     /** Static request queue (we don't want multiple request queue objects) **/
     public static RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(MainActivity.getAppContext());
+            mRequestQueue = Volley.newRequestQueue(ActivityMain.getAppContext());
         }
         return mRequestQueue;
     }
@@ -106,8 +107,11 @@ public class ItunesSolo {
         return new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                // Do whatever you want to do with error.getMessage();
-                Log.v("TAG", "Bad url is: " + String.valueOf(url));
+                Log.v("TAG","Itunes VolleyError error : "+error);
+
+                if(error == null || error.equals("null")){
+                    useApi();
+                }
             }
         };
     }
@@ -122,7 +126,8 @@ public class ItunesSolo {
 
                 String imageUrl=null;
 
-                if(response.resultCount > 0){
+                if(response.resultCount > 0 && !response.equals("")){
+
                     //Log.v("TAG","response.results.size() is "+String.valueOf(response.results.size()));
                     for(int i=0;i<response.results.size();i++){
                         Log.v("TAG","'i' is "+String.valueOf(i));
@@ -152,22 +157,18 @@ public class ItunesSolo {
                 }
 
                 /** Try Spotify if image url is null **/
-                if(null == imageUrl){
-                    //amzn.makeRequest();
-                }
+                if(null == imageUrl || imageUrl.equals("")){
 
-                new Thread() {
-                    public void run() {
-                        try {
-                            Thread.sleep(1);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }.start();
+                    useApi(); //use a different api
 
-                /** Download image **/
-                if(null != imageUrl){ // if imageUrl is not null, do this
+                } else {
+
+                    /**
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }**/
 
                     /** Make an image request **/
                     ImageRequest myImageReq = new ImageRequest(imageUrl, new Response.Listener<Bitmap>() {
@@ -176,65 +177,71 @@ public class ItunesSolo {
                         /** Image request onResponse method **/
                         public void onResponse(final Bitmap response) {
 
-                            new Thread() {
-                                public void run() {
+                            if(response.getHeight() ==1 && response.getWidth() == 1){ //If there is no image, Volley return a 1x1 px black bitmap as default
 
-                                    // Save the bitmap to disk, return an image path
-                                    SaveBitMapToDisk saveImage = new SaveBitMapToDisk();
-                                    saveImage.SaveImage(response, "myalbumart");
-                                    String imagePathData = saveImage.getImagePath();
+                                useApi(); //use a different api
 
-                                    // Update the image path to Android meta data
-                                    MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
-                                    mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObject.albumId), imagePathData);
+                            } else {
 
-                                    //Update uri path
-                                    albumObject.albumArtURI = imagePathData;
+                                new Thread() {
+                                    public void run() {
 
-                                    //up uri paths of song objects
-                                    for(int i=0;i<albumObject.songObjectList.size();i++){
-                                        albumObject.songObjectList.get(i).albumArtURI = imagePathData;
-                                    }
+                                        // Save the bitmap to disk, return an image path
+                                        SaveBitMapToDisk saveImage = new SaveBitMapToDisk();
+                                        saveImage.SaveImage(response, "myalbumart");
+                                        String imagePathData = saveImage.getImagePath();
 
-                                    // Update all adapters (not yet implemented)
-                                    Log.v("TAG","value of activity is "+activity);
-                                    activity.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
+                                        // Update the image path to Android meta data
+                                        MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
+                                        mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObject.albumId), imagePathData);
 
-                                            UpdateAdapters.getInstance().update();
+                                        //Update uri path
+                                        albumObject.albumArtURI = imagePathData;
 
+                                        //up uri paths of song objects
+                                        for(int i=0;i<albumObject.songObjectList.size();i++){
+                                            albumObject.songObjectList.get(i).albumArtURI = imagePathData;
                                         }
-                                    });
+
+                                        // Update all adapters (not yet implemented)
+                                        Log.v("TAG","value of activity is "+activity);
+                                        activity.runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+
+                                                UpdateAdapters.getInstance().update();
+
+                                            }
+                                        });
 
 
-                                    //SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);
-                                    //sbmruri.run();
+                                        //SaveBitmapAndRecordUri sbmruri = new SaveBitmapAndRecordUri(response, url, getContext(), songObject.albumID);
+                                        //sbmruri.run();
 
-                                    /** MediaStoreInterface
-                                     String folderName = "MusicPlayer5";
-                                     MediaStoreInterface msi = new MediaStoreInterface(context);
-                                     msi.clearFolder(folderName);
-                                     msi.createFolder(folderName);
-                                     msi.saveBitMapToFolderWithRandomNumericalName(folderName, response);
-                                     String imagePath = msi.getLastImagePath();
-                                     msi.updateAndroidWithImagePath(imagePath, songObject.albumID);
-                                     msi.dumpCursor(songObject.albumID);**/
+                                        /** MediaStoreInterface
+                                         String folderName = "MusicPlayer5";
+                                         MediaStoreInterface msi = new MediaStoreInterface(context);
+                                         msi.clearFolder(folderName);
+                                         msi.createFolder(folderName);
+                                         msi.saveBitMapToFolderWithRandomNumericalName(folderName, response);
+                                         String imagePath = msi.getLastImagePath();
+                                         msi.updateAndroidWithImagePath(imagePath, songObject.albumID);
+                                         msi.dumpCursor(songObject.albumID);**/
 
-                                    // So here I need to update the albumART URIs by (a) writing to the meta data and (b) updating the current song object URI
-                                    // that way the URI is there on application restart, but also now so that Picasso has an image source to adapt to the list
+                                        // So here I need to update the albumART URIs by (a) writing to the meta data and (b) updating the current song object URI
+                                        // that way the URI is there on application restart, but also now so that Picasso has an image source to adapt to the list
 
-                                    //notifyDataSetChanged(); // Notify the this list adapter class that the underlying data has changed
-                                }
-                            }.start();
+                                        //notifyDataSetChanged(); // Notify the this list adapter class that the underlying data has changed
+                                    }
+                                }.start();
+                            }
                         }
                     }, 0, 0, null, createMyReqErrorListener(imageUrl));
 
                     mRequestQueue.add(myImageReq);
+
                 }
             }
         };
     }
-
-
 }

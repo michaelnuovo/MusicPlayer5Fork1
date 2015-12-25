@@ -17,6 +17,10 @@ public class AlbumObject implements Parcelable {
     public String albumArtURI;
     public ArrayList<SongObject> songObjectList = new ArrayList<>();
 
+    int lastFmRequestErrorNumber = 0;
+    int spotifyRequestErrorNumber = 0;
+    int amazonRequestErrorNumber = 0;
+
     public AlbumObject(String albumTitle, String albumArtist, String albumArtURI, SongObject songObject){
 
         this.albumTitle = albumTitle;
@@ -46,6 +50,9 @@ public class AlbumObject implements Parcelable {
         albumArtist = in.readString();
         albumArtURI = in.readString();
         albumTrackCount = in.readInt();
+        amazonRequestErrorNumber = in.readInt();
+        spotifyRequestErrorNumber = in.readInt();
+        lastFmRequestErrorNumber = in.readInt();
         albumId=in.readInt();
         in.readTypedList(songObjectList, SongObject.CREATOR);
     }
@@ -70,6 +77,9 @@ public class AlbumObject implements Parcelable {
         albumArtist = in.readString();
 
         albumTrackCount = in.readInt();
+        amazonRequestErrorNumber = in.readInt();
+        spotifyRequestErrorNumber = in.readInt();
+        lastFmRequestErrorNumber = in.readInt();
         albumId=in.readInt();
         in.readTypedList(songObjectList, SongObject.CREATOR);
 
@@ -85,9 +95,11 @@ public class AlbumObject implements Parcelable {
         dest.writeString(albumArtist);
 
         dest.writeInt(albumTrackCount);
+        dest.writeInt(amazonRequestErrorNumber);
+        dest.writeInt(spotifyRequestErrorNumber);
+        dest.writeInt(lastFmRequestErrorNumber);
         dest.writeInt(albumId);
         dest.writeTypedList(songObjectList);
 
     }
-
 }

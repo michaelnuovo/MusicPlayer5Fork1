@@ -21,26 +21,29 @@ public class AlbumArt {
     Context ctx;
     ArrayList<String[]> paths = new ArrayList();
 
-    ArrayList<AlbumObject> requestList;
+    ArrayList<AlbumObject> albumObjectsList;
     Activity activity;
 
-    public AlbumArt(Context ctx, ArrayList<AlbumObject> requestList){
+    public AlbumArt(Context ctx, ArrayList<AlbumObject> albumObjectsList){
 
         this.ctx = ctx;
-        this.requestList=requestList;
+        this.albumObjectsList=albumObjectsList;
         this.activity = (Activity) ctx;
         initFields();
     }
 
     public void resetPaths(){
+
         MediaStoreInterface mediaStore = new MediaStoreInterface(ctx);
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        for(int i=0;i<paths.size();i++){
-            mmr.setDataSource(paths.get(i)[0]);
-            byte [] data = mmr.getEmbeddedPicture();
-            Bitmap bitmap;
+        Bitmap bitmap;
 
-            if(data!=null){ // not all albums have embedded art
+        for(int i=0; i<albumObjectsList.size();i++){
+            String songPath = albumObjectsList.get(i).songObjectList.get(0).songPath; //get a song path from a song in the album
+            mmr.setDataSource(songPath);
+            byte [] data = mmr.getEmbeddedPicture();
+
+            if(data!=null){ // if the songs in the album have embedded do this
                 bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 
                 // Save the bitmap to disk, return an image path
@@ -49,39 +52,34 @@ public class AlbumArt {
                 String imagePathData = saveImage.getImagePath();
 
                 // Update the image path to Android meta data
-                Log.v("TAG","paths.get(i)[1] : "+paths.get(i)[1]);
-                Log.v("TAG","imagePathData : "+imagePathData);
-                mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(paths.get(i)[1]), imagePathData); // id / path
-            } else {
-                mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(paths.get(i)[1]), "null"); // id / path
-                paths.get(i)[0]="null";
-            }
+                //Log.v("TAG","paths.get(i)[1] : "+paths.get(i)[1]);
+                //Log.v("TAG","imagePathData : "+imagePathData);
+                mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObjectsList.get(i).albumId), imagePathData); // id / path
 
-        }
+                //update the album uri path
+                albumObjectsList.get(i).albumArtURI = imagePathData;
 
+                //update the uri paths of the songs in the album object
+                for(int j=0; j<albumObjectsList.get(i).songObjectList.size();j++){
+                    albumObjectsList.get(i).songObjectList.get(j).albumArtURI = imagePathData;
+                }
 
+            } else { //if the songs in the album do not have embedded art, set their paths to null
 
+                //update the album uri path
+                albumObjectsList.get(i).albumArtURI = "null";
 
-        //update songobject uri paths
-        for(int i=0;i<requestList.size();i++){
-            boolean match = false;
-            while(match == false){
-                for(int j=0;j<paths.size();j++){
-                    Log.v("TAG","value of requestList.get(i).albumId is "+requestList.get(i).albumId);
-                    Log.v("TAG","value of paths.get(j)[0]) is "+paths.get(j)[0]);
-                    if(requestList.get(i).albumId == Integer.parseInt(paths.get(j)[0])){
-                        for(int k=0;k<requestList.get(i).songObjectList.size();k++){
-                            requestList.get(i).songObjectList.get(k).albumArtURI = paths.get(j)[1];
-                        }
-                        match = true;
-                    }
+                //update the meta data
+                mediaStore.updateMediaStoreAudioAlbumsDataByAlbumId(Long.valueOf(albumObjectsList.get(i).albumId), "null"); // id / path
+
+                //update the songs in the album
+                for(int j=0; j<albumObjectsList.get(i).songObjectList.size();j++){
+                    albumObjectsList.get(i).songObjectList.get(j).albumArtURI = "null";
                 }
             }
         }
 
-
-
-        //Log.v("TAG","value of activity is "+activity);
+        //update the adapters
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -90,8 +88,6 @@ public class AlbumArt {
 
             }
         });
-
-
     }
 
     public void setAllPathsToNull(){
@@ -106,19 +102,19 @@ public class AlbumArt {
 
         }
 
-        Log.v("TAG","paths is : "+paths);
+        //Log.v("TAG","paths is : "+paths);
 
         //update songobject uri paths
-        for(int i=0;i<requestList.size();i++){
+        for(int i=0;i<albumObjectsList.size();i++){
             boolean match = false;
             while(match == false){
                 for(int j=0;j<paths.size();j++){
-                    Log.v("TAG","value of requestList.get(i).albumId is "+requestList.get(i).albumId);
+                    Log.v("TAG","value of requestList.get(i).albumId is "+albumObjectsList.get(i).albumId);
                     Log.v("TAG","value of paths.get(j)[0]) is "+paths.get(j)[0]);
-                    if(requestList.get(i).albumId == Integer.parseInt(paths.get(j)[1])){
+                    if(albumObjectsList.get(i).albumId == Integer.parseInt(paths.get(j)[1])){ // path / id
 
-                        for(int k=0;k<requestList.get(i).songObjectList.size();k++){
-                            requestList.get(i).songObjectList.get(k).albumArtURI = paths.get(j)[1];
+                        for(int k=0;k<albumObjectsList.get(i).songObjectList.size();k++){
+                            albumObjectsList.get(i).songObjectList.get(k).albumArtURI = paths.get(j)[1];
                         }
                         match = true;
                     }
@@ -126,7 +122,11 @@ public class AlbumArt {
             }
         }
 
-
+        for(int i=0;i<albumObjectsList.size();i++){
+            //Log.v("TAG","albumObjectList.get(i).albumTitle is "+albumObjectList.get(i).albumTitle);
+            //Log.v("TAG","albumObjectList.get(i).albumTitle uri is "+albumObjectList.get(i).albumArtURI);
+            albumObjectsList.get(i).albumArtURI="null";
+        }
 
 
         //Log.v("TAG","value of activity is "+activity);
@@ -149,7 +149,7 @@ public class AlbumArt {
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.DATA,
                 MediaStore.Audio.Media.DURATION,
-                MediaStore.Audio.Media.ALBUM_ID};
+                MediaStore.Audio.Media._ID};
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
         String order = MediaStore.Audio.Media.TITLE + " ASC";
         final Cursor mCursor = ctx.getContentResolver().query(contentURI, projection, selection, null, order);// Run getContentResolver query
@@ -165,7 +165,7 @@ public class AlbumArt {
             String id = mCursor.getString(5);
             String[] element = {str,id}; // path / id
             paths.add(element);
-            Log.v("TAG", "string is " + str);
+            //Log.v("TAG", "string is " + str);
 
             //return str;
         }

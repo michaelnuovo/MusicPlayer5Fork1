@@ -7,10 +7,13 @@
 
     <ImageView
         android:id="@+id/slidingView"
-        android:background="#FFCDD2"
+        android:background="#000000"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"/>
+        android:scaleType="centerCrop"
+        />
+
+    <!-- android:scaleType="centerCrop" -->
 
     <TextView
         android:id="@+id/pagertest"

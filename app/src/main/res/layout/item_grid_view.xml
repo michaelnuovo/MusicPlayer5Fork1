@@ -3,7 +3,9 @@
     android:layout_height="match_parent"
     android:background="#191919"
     android:orientation="vertical"
-    android:listSelector="@null">
+    android:listSelector="@null"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
 
     <ImageView
         android:id="@+id/gridViewAlbumArt"
