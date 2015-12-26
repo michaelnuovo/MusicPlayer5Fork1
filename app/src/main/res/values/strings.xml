@@ -13,5 +13,7 @@
         Data Storage. SharedPreferences, Internal and External Storage. ListView, GridView, RelativeLayout,
         LinearLayout, Scrollbar, Spinner, Dialog, CAB, Styling, ImageView blink, TextSwitcher, Library Projects,
         How to import Android Library Projects, Progress Bar, Animation, Android Tools and many more.</string>
+    <string name="title_activity_artists">ArtistsActivity</string>
+    <string name="title_activity_activity_albums">ActivityAlbums</string>
 
 </resources>

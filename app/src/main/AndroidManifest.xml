@@ -1,28 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.michael.musicplayer5" >
+    package="com.example.michael.musicplayer5">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <!-- Include following permission if you want to cache images on SD card -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-
     <uses-permission android:name="android.permission.INTERNET" />
-
-
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/MyMaterialTheme" >
+        android:theme="@style/MyMaterialTheme">
         <activity
             android:name=".ActivityMain"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -32,8 +28,15 @@
         <activity
             android:name=".ActivityPlayPanel"
             android:label="@string/title_activity_play_panel"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ActivityArtists"
+            android:label="@string/title_activity_artists"
+            android:theme="@style/MyMaterialTheme" />
+        <activity
+            android:name=".ActivityAlbums"
+            android:label="@string/title_activity_activity_albums"
+            android:theme="@style/MyMaterialTheme"></activity>
     </application>
 
 </manifest>

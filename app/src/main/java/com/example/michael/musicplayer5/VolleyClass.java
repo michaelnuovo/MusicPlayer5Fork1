@@ -21,7 +21,7 @@ public class VolleyClass {
     public static RequestQueue requestQueue = null;
     int listIndex;
     ArrayList<SongObject> songObjectList = ActivityMain.mainList;
-    AdapterTracks adapter = MyFragmentTracks.adapter;
+    AdapterTracks adapter = FragmentTracks.adapter;
     private Activity activity;
 
     public VolleyClass(int listIndex, Activity activity){

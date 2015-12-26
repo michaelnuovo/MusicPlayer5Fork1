@@ -29,7 +29,7 @@ import java.util.List;
 
 //import org.apache.commons.io.FileUtils;
 
-public class ActivityMain extends AppCompatActivity {
+public class ActivityArtists extends AppCompatActivity {
 
 
     //testing
@@ -80,14 +80,14 @@ public class ActivityMain extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         /**
-        String encStr = "not encoded";
-        try {
-            encStr = URLEncoder.encode("ASd asd", "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            Log.v("TAG","stack trace");
-            e.printStackTrace();
-        }
-        Log.v("TAG","this thing here is : "+encStr);
+         String encStr = "not encoded";
+         try {
+         encStr = URLEncoder.encode("ASd asd", "UTF-8");
+         } catch (UnsupportedEncodingException e) {
+         Log.v("TAG","stack trace");
+         e.printStackTrace();
+         }
+         Log.v("TAG","this thing here is : "+encStr);
          **/
 
         /** Set global context variables **/
@@ -260,7 +260,7 @@ public class ActivityMain extends AppCompatActivity {
                 // the new activity but without restarting the song.
                 // If a song is not playing, then we want to play the first song on the list.
                 if(StaticMusicPlayer.mediaPlayer.isPlaying()){
-                   // do nothing
+                    // do nothing
                 } else {
                     StaticMusicPlayer.tryToPlaySong(songObjectList.get(0));
                 }
@@ -355,9 +355,9 @@ public class ActivityMain extends AppCompatActivity {
 
                     /** Download images **/
                     //if(songObject.albumArtURI.equals(targetValue)){ //If the data is an empty string
-                        //updatePath = new MediaStoreInterface(ctx);
-                        //updatePath.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(albumID[0]), "Y"); //So we only do one album at a time
-                       // requestList.add(songObject);
+                    //updatePath = new MediaStoreInterface(ctx);
+                    //updatePath.updateMediaStoreAudioAlbumsDataByAlbumId(Long.parseLong(albumID[0]), "Y"); //So we only do one album at a time
+                    // requestList.add(songObject);
                     //}
 
                     // add song object to lists
@@ -389,32 +389,32 @@ public class ActivityMain extends AppCompatActivity {
                     }
 
                     /**
-                    if(albumObjectList.isEmpty()){
-                        albumObjectList.add(new AlbumObject(albumTitle,albumArtist,songObject.albumArtURI,songObject));
-                    } else {
+                     if(albumObjectList.isEmpty()){
+                     albumObjectList.add(new AlbumObject(albumTitle,albumArtist,songObject.albumArtURI,songObject));
+                     } else {
 
-                        boolean bool = false;
-                        for(int i = 0; i < albumObjectList.size(); i++) { // of the song is already added, don't add it again
+                     boolean bool = false;
+                     for(int i = 0; i < albumObjectList.size(); i++) { // of the song is already added, don't add it again
 
-                            if(albumObjectList.get(i).albumTitle.equals(albumTitle)) {
-                                albumObjectList.get(i).songObjectList.add(songObject);
-                                albumObjectList.get(i).albumArtURI = songObject.albumArtURI;
-                                albumObjectList.get(i).albumId = Integer.parseInt(songObject.albumID);
-                                Log.v("TAG","album id is here : "+songObject.albumID);
-                                albumObjectList.get(i).albumTitle = songObject.albumTitle;
-                                albumObjectList.get(i).albumArtist = songObject.artist;
-                                albumObjectList.get(i).albumTrackCount += 1;
+                     if(albumObjectList.get(i).albumTitle.equals(albumTitle)) {
+                     albumObjectList.get(i).songObjectList.add(songObject);
+                     albumObjectList.get(i).albumArtURI = songObject.albumArtURI;
+                     albumObjectList.get(i).albumId = Integer.parseInt(songObject.albumID);
+                     Log.v("TAG","album id is here : "+songObject.albumID);
+                     albumObjectList.get(i).albumTitle = songObject.albumTitle;
+                     albumObjectList.get(i).albumArtist = songObject.artist;
+                     albumObjectList.get(i).albumTrackCount += 1;
 
-                                bool = true;
-                            }
-                        }
+                     bool = true;
+                     }
+                     }
 
-                        if(bool == false){ // if the song is not added, add it
-                            AlbumObject newAlbumObject = new AlbumObject(albumTitle,albumArtist,albumArtURI,songObject);
-                            newAlbumObject.albumTrackCount +=1;
-                            albumObjectList.add(newAlbumObject);
-                        }
-                    }**/
+                     if(bool == false){ // if the song is not added, add it
+                     AlbumObject newAlbumObject = new AlbumObject(albumTitle,albumArtist,albumArtURI,songObject);
+                     newAlbumObject.albumTrackCount +=1;
+                     albumObjectList.add(newAlbumObject);
+                     }
+                     }**/
 
                     /** Making the artist object and adding it to the list **/
 

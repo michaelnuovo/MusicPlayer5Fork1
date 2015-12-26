@@ -14,7 +14,7 @@ import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
-public class MyFragmentTracks extends Fragment implements MyInterface {
+public class FragmentTracks extends Fragment implements MyInterface {
 
     /** Fragment Variables **/
     public static final String EXTRA_MESSAGE = "EXTRA_MESSAGE";
@@ -58,10 +58,10 @@ public class MyFragmentTracks extends Fragment implements MyInterface {
     }
 
     /** Static Factory Method for Fragment Instantiation **/
-    public static final MyFragmentTracks newInstance(ArrayList<SongObject> arrayList)
+    public static final FragmentTracks newInstance(ArrayList<SongObject> arrayList)
     {
 
-        MyFragmentTracks f = new MyFragmentTracks();
+        FragmentTracks f = new FragmentTracks();
         Bundle bdl = new Bundle(1);
         bdl.putParcelableArrayList(EXTRA_MESSAGE, arrayList);
         f.setArguments(bdl);

@@ -21,4 +21,10 @@
         android:layout_gravity="bottom"
         />
 
+    <!-- black line divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#000000"/>
+
 </LinearLayout>

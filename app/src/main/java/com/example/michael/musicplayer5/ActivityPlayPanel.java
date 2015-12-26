@@ -110,7 +110,7 @@ public class ActivityPlayPanel extends AppCompatActivity {
 
         // Initialize and add fragment objects to the array list
 
-        fList.add(MyFragmentTracks.newInstance(songObjectList));
+        fList.add(FragmentTracks.newInstance(songObjectList));
 
         // Return the fragment object array list for adaption to the pager view
         return fList;

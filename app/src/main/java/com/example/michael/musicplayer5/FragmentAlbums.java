@@ -10,7 +10,7 @@ import android.widget.GridView;
 
 import java.util.ArrayList;
 
-public class MyFragmentAlbums extends Fragment {
+public class FragmentAlbums extends Fragment {
 
     /** Fragment Variables **/
     public static final String EXTRA_MESSAGE = "EXTRA_MESSAGE";
@@ -18,9 +18,9 @@ public class MyFragmentAlbums extends Fragment {
     static ArrayList<AlbumObject> albumObjectList;
 
     /** Static Factory Method for Fragment Instantiation **/
-    public static final MyFragmentAlbums newInstance(ArrayList<AlbumObject> arrayList)
+    public static final FragmentAlbums newInstance(ArrayList<AlbumObject> arrayList)
     {
-        MyFragmentAlbums f = new MyFragmentAlbums();
+        FragmentAlbums f = new FragmentAlbums();
         Bundle bdl = new Bundle(1);
         bdl.putParcelableArrayList(EXTRA_MESSAGE, arrayList);
         f.setArguments(bdl);

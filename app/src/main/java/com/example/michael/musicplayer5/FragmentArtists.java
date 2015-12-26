@@ -1,16 +1,19 @@
 package com.example.michael.musicplayer5;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class MyFragmentArtists extends Fragment {
+public class FragmentArtists extends Fragment {
 
     /** Fragment Variables **/
     public static final String EXTRA_MESSAGE = "EXTRA_MESSAGE";
@@ -18,9 +21,9 @@ public class MyFragmentArtists extends Fragment {
     static ArrayList<ArtistObject> artistObjectList;
 
     /** Static Factory Method for Fragment Instantiation **/
-    public static final MyFragmentArtists newInstance(ArrayList<ArtistObject> arrayList)
+    public static final FragmentArtists newInstance(ArrayList<ArtistObject> arrayList)
     {
-        MyFragmentArtists f = new MyFragmentArtists();
+        FragmentArtists f = new FragmentArtists();
         Bundle bdl = new Bundle(1);
         bdl.putParcelableArrayList(EXTRA_MESSAGE, arrayList);
         f.setArguments(bdl);
@@ -44,7 +47,20 @@ public class MyFragmentArtists extends Fragment {
 
         UpdateAdapters.getInstance().setAdapterTwo(adapter);
 
+        Listeners();
 
         return rootView;
+    }
+
+    private void Listeners(){
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+
+                Intent intent = new Intent(getActivity(), ActivityPlayPanel.class);
+                startActivity(intent);
+            }
+        });
     }
 }
