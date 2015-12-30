@@ -29,14 +29,6 @@
             android:name=".ActivityPlayPanel"
             android:label="@string/title_activity_play_panel"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".ActivityArtists"
-            android:label="@string/title_activity_artists"
-            android:theme="@style/MyMaterialTheme" />
-        <activity
-            android:name=".ActivityAlbums"
-            android:label="@string/title_activity_activity_albums"
-            android:theme="@style/MyMaterialTheme"></activity>
     </application>
 
 </manifest>
