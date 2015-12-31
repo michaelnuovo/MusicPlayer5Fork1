@@ -141,8 +141,6 @@ public class FragmentTracks extends Fragment implements MyInterface {
 
     public void TitlePanelClickListener(){
 
-
-
         /** Title Listener **/
         TitlePanel.setOnClickListener(new View.OnClickListener() {
             @Override

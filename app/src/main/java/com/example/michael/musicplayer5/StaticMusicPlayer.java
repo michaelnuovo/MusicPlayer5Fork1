@@ -145,7 +145,15 @@ public final class StaticMusicPlayer {
         currentIndex = songObjectList.indexOf(songObject);
         musicIsPlaying = true;
         isPaused = false;
-        //playButton.setChecked(true);
+        //playButton.setChecked(true)
+        //ActivityMain.footerPager.invalidate();
+        //ActivityMain.footerPager.setCurrentItem(StaticMusicPlayer.currentIndex); //refresh footer pager in main activity
+        ActivityMain.footerPager.setAdapter(new PageAdapterFooter(ActivityMain.getAppContext()));
+        ActivityMain.footerPager.setCurrentItem(currentIndex);
+
+
+        //footer_song_info.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).songTitle);
+        //footer_song_artist.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).artist);
 
         new Thread() {
             public void run() {

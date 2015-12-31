@@ -67,8 +67,7 @@ public class ActivityMain extends AppCompatActivity {
         super.onResume();
 
         /** refresh album pager **/
-        footerPager.setCurrentItem(StaticMusicPlayer.currentIndex);
-
+        //footerPager.setCurrentItem(StaticMusicPlayer.currentIndex);
         //footer_song_info.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).songTitle);
         //footer_song_artist.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).artist);
     }
@@ -174,6 +173,14 @@ public class ActivityMain extends AppCompatActivity {
         footerPager = (ViewPager) findViewById(R.id.footerPager);
         footerPager.setAdapter(new PageAdapterFooter(this));
         footerPager.setCurrentItem(StaticMusicPlayer.currentIndex);
+
+        footerPager.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // never called
+                Log.v("TAG","pager footer clicked");
+            }
+        });
 
 
         /** set footer song info **/

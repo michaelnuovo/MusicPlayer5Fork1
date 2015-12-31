@@ -1,10 +1,13 @@
 package com.example.michael.musicplayer5;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.view.PagerAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -17,9 +20,11 @@ import java.util.ArrayList;
 
 public class PageAdapterFooter extends PagerAdapter {
 
+
     private Context mContext;
     private ArrayList<SongObject> songObjectsList = StaticMusicPlayer.songObjectList;
     private SongObject songObject;
+    private int currentIndex;
 
     public PageAdapterFooter(Context context) {
 
@@ -27,18 +32,42 @@ public class PageAdapterFooter extends PagerAdapter {
         //super(fm);
         this.mContext = context;
         //this.songObjectsList = songObjectsList;
+        this.currentIndex = currentIndex;
 
     }
 
 
     @Override
-    public Object instantiateItem(ViewGroup collection, int position) {
+    public Object instantiateItem(ViewGroup collection, final int position) {
 
 
         songObject = songObjectsList.get(position);
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
         ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.page_adapter_footer, collection, false); //a view group is a layout, a view is a child of a view group
+
+        //View page = inflater.inflate(R.layout.YOUR_PAGE, null);
+
+        layout.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v){
+                //this will log the page number that was click
+                Log.v("TAG", "This page was clicked: ");
+
+                Intent intent = new Intent(mContext, ActivityPlayPanel.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                //intent.putExtra("songObjectList", songObjectList); //Optional parameters
+                mContext.startActivity(intent);
+
+
+                if(StaticMusicPlayer.mediaPlayer.isPlaying() && StaticMusicPlayer.currentIndex == position){
+                    // do nothing
+                } else {
+                    StaticMusicPlayer.tryToPlaySong(songObject);
+                }
+
+            }
+        });
+
 
         //ViewGroup layout2 = (ViewGroup) inflater.inflate(R.layout.footer_album_layout, collection, false); //the second layout I want to adapt to
 
