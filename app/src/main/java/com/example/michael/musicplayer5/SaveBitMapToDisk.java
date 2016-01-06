@@ -1,6 +1,12 @@
 package com.example.michael.musicplayer5;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.os.Environment;
 
 import java.io.File;
@@ -13,10 +19,12 @@ import java.util.Random;
  */
 public class SaveBitMapToDisk {
 
-    String imagePath;
+    String imagePath1;
+    String imagePath2;
+    Bitmap blurredAndDarkened;
 
-    public String getImagePath(){
-        return imagePath;
+    public String getImagePath1(){
+        return imagePath1;
     }
 
     public void deleteByFileName(String folderName, String fileName){
@@ -32,9 +40,19 @@ public class SaveBitMapToDisk {
         }
     }
 
-    public void SaveImage(Bitmap finalBitmap, String folderName) {
+    public void SaveImage(final Bitmap finalBitmap, String folderName) {
 
-        // Here we make the directory
+        blurredAndDarkened = darkenBitMap(FastBlur.fastblur(finalBitmap, 1, 5));
+
+        /**
+        new Thread() {
+            public void run() {
+                blurredAndDarkened = darkenBitMap(FastBlur.fastblur(finalBitmap, 1, 5));
+            }
+        }.start();**/
+
+
+        //Create directory
         String root = Environment.getExternalStorageDirectory().toString();
         File myDir = new File(root + "/" + folderName);
         myDir.mkdirs();
@@ -45,24 +63,57 @@ public class SaveBitMapToDisk {
         //    new File(myDir, children[i]).delete();
         //}
 
-        // This is a random number generator for generating unique file names.
+        //Generate random number
         Random generator = new Random();
         int n = 10000;
         n = generator.nextInt(n);
-        String fileName = "Image-" + n + ".jpg";
 
-        imagePath = myDir + "/" + fileName;
+        //Name files
+        String fileName1 = "Image-" + n + ".jpg";
+        String fileName2 = "Image-" + n + "BlurredDark" + ".jpg";
 
-        File file = new File(myDir, fileName);
-        if (file.exists()) file.delete(); // here we overwrite the image file if it already exists (i.e. if the generated name is not unique, overwrite)
+        //Set image paths
+        imagePath1 = myDir + "/" + fileName1;
+        imagePath2 = myDir + "/" + fileName2;
+
+        //Make files
+        File file1 = new File(myDir, fileName1);
+        File file2 = new File(myDir, fileName2);
+
+        //Test existence of files
+        if (file1.exists()) file1.delete();
+        if (file2.exists()) file2.delete();
+
+        //Write images to files
         try {
-            FileOutputStream out = new FileOutputStream(file);
-            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out); // Converts the bitmap into a JPEG (a compressed variant of the bitmap)
-            out.flush(); // flushes anything which is still buffered by the OutputStream. See why JAVA uses a "buffer" for output streams https://docs.oracle.com/javase/tutorial/essential/io/buffers.html
-            out.close();
+
+            FileOutputStream out1 = new FileOutputStream(file1);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out1); // Converts the bitmap into a JPEG (a compressed variant of the bitmap)
+
+            out1.flush(); // flushes anything which is still buffered by the OutputStream. See why JAVA uses a "buffer" for output streams https://docs.oracle.com/javase/tutorial/essential/io/buffers.html
+            out1.close();
+
+            FileOutputStream out2 = new FileOutputStream(file2);
+            blurredAndDarkened.compress(Bitmap.CompressFormat.JPEG, 90, out2); // Converts the bitmap into a JPEG (a compressed variant of the bitmap)
+
+            out2.flush(); // flushes anything which is still buffered by the OutputStream. See why JAVA uses a "buffer" for output streams https://docs.oracle.com/javase/tutorial/essential/io/buffers.html
+            out2.close();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private Bitmap darkenBitMap(Bitmap bm) {
+
+        Canvas canvas = new Canvas(bm);
+        Paint p = new Paint(Color.RED);
+        //ColorFilter filter = new LightingColorFilter(Color.RED, 1);
+        //ColorFilter filter = new LightingColorFilter(0xFFFFFFFF , 0x00222222); // to lighten
+        ColorFilter filter = new LightingColorFilter(0xFF7F7F7F, 0x00000000); // to darken
+        p.setColorFilter(filter);
+        canvas.drawBitmap(bm, new Matrix(), p);
+
+        return bm;
     }
 }

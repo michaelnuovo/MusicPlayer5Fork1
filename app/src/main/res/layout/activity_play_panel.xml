@@ -16,16 +16,18 @@
         android:layout_width="wrap_content"
         android:layout_alignParentTop="true"/>
 
+    <!--
     <include layout="@layout/shadow_view"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_above="@+id/activity_play_panel_play_controls"/>
+        android:layout_above="@+id/activity_play_panel_play_controls"/>-->
 
-    <include layout="@layout/activity_play_panel_play_controls"
-        android:id="@id/activity_play_panel_play_controls"
-        android:layout_height="wrap_content"
+    <include
+        layout="@layout/activity_play_panel_play_controls"
+        android:id="@+id/activity_play_panel_play_controls"
+        android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:layout_alignParentBottom="true"/>
+        />
 
     <!-- OLD LAYOUT
     <include layout="@layout/activity_play_panel_toolbar"

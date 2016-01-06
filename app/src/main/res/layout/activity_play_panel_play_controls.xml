@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+
+    android:orientation="horizontal"
+    android:layout_width="0dp"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="#50000000"
+    android:gravity="center">
 
 
 
@@ -36,6 +39,12 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_margin="10dp" />-->
+<!--
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" >
+    </View>
 
         <Button
             android:id="@+id/skipback"
@@ -44,19 +53,40 @@
             android:layout_height="50dp"
             android:layout_margin="10dp"/>
 
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" >
+    </View>
+
         <ToggleButton
             android:id="@+id/playbutton"
             android:background="@drawable/selector_button_play"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_margin="10dp"/>
+            android:layout_margin="10dp"
+            />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" >
+    </View>
 
         <Button
             android:id="@+id/skipforwards"
             android:background="@drawable/skipforwards"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_margin="10dp"/>
+            android:layout_margin="10dp" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" >
+    </View>
+
+    -->
 
     <!--
         <ImageView

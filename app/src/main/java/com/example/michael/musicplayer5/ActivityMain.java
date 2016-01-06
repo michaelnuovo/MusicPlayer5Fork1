@@ -117,9 +117,9 @@ public class ActivityMain extends AppCompatActivity {
         //mint.clearFolder("myalbumart");
 
         AlbumArt aa = new AlbumArt(this,albumObjectList);
-        //aa.resetPaths(); // set to album path to null if there are no images
+        //aa.resetPaths(); // set to album path to null if there are no native images
 
-        aa.dumpAlbumColumns();
+        //aa.dumpAlbumColumns();
 
         LastFmAlbumLookup lf = new LastFmAlbumLookup(this,albumObjectList);
         //lf.makeRequest();

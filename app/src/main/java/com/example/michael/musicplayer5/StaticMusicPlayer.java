@@ -47,7 +47,7 @@ public final class StaticMusicPlayer {
 
     static private boolean musicIsPlaying = false; // Variable sets the play button toggle mode
 
-    static private boolean isPaused;
+    static public boolean isPaused;
 
     /** Empty Constructor **/
 
@@ -347,7 +347,9 @@ public final class StaticMusicPlayer {
 
             public void onPageSelected(int position) {
 
-                tryToPlaySong(songObjectList.get(position));
+                if(!isPaused){
+                    tryToPlaySong(songObjectList.get(position));
+                }
             }
         });
     }

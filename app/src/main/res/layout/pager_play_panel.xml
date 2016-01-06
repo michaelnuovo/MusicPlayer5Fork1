@@ -5,76 +5,79 @@
     android:layout_height="match_parent"
     android:id="@+id/activity_play_panel">
 
-    <ImageView
-        android:id="@+id/slidingView"
-        android:background="#000000"
+    <LinearLayout
+
+        android:id="@+id/pager_controls_layout"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        />
-
-    <!-- android:scaleType="centerCrop" -->
-
-    <TextView
-        android:id="@+id/pagertest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        />
-
-    <!--
-    <LinearLayout
-        android:id="@+id/playPanelTop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentTop="true"
         android:gravity="center">
 
-        <TextView
-            android:id="@+id/playPanelTitleView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TEST TITLE"
-            android:textColor="#ffffff"
-            android:layout_margin="20dp"
-            android:textSize="30dp"
-            android:padding="5dp"
-            android:singleLine="true"
-            android:background="#50000000"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" >
+        </View>
+
+        <Button
+            android:id="@+id/skipback"
+            android:background="@drawable/skipback"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" >
+        </View>
+
+        <ToggleButton
+            android:id="@+id/playbutton"
+            android:background="@drawable/selector_button_play"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" >
+        </View>
+
+        <Button
+            android:id="@+id/skipforwards"
+            android:background="@drawable/skipforwards"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" >
+        </View>
 
 
-
-        <ImageView
-            android:id="@+id/playPanelAlbumView"
-            android:layout_width="350dp"
-            android:layout_height="350dp"
-            android:background="#50000000"
-            android:padding="10dp"/>
-
-        <TextView
-            android:id="@+id/playPanelAlbum"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="test album"
-            android:textColor="#ffffff"
-            android:textSize="25dp"
-            android:background="#50000000"
-            android:layout_marginTop="20dp"/>
-
-        <TextView
-            android:id="@+id/playPanelArtist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="test artist"
-            android:textSize="20dp"
-            android:textColor="#ffffff"
-            android:background="#50000000"
-            android:layout_marginTop="10dp"/>
 
     </LinearLayout>
 
-    -->
+    <LinearLayout
+        android:id="@+id/pager_art_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
+        <!--
+        <TextView
+            android:id="@+id/pagertest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            />-->
+
+    </LinearLayout>
 
 </RelativeLayout>
