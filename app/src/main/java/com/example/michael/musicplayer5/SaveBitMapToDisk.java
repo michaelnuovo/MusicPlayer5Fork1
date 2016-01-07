@@ -1,5 +1,6 @@
 package com.example.michael.musicplayer5;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -7,7 +8,10 @@ import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.Environment;
+import android.view.Display;
+import android.view.WindowManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,7 +25,10 @@ public class SaveBitMapToDisk {
 
     String imagePath1;
     String imagePath2;
+    String imagePath3;
     Bitmap blurredAndDarkened;
+    Bitmap cropped;
+    Bitmap croppedDark;
 
     public String getImagePath1(){
         return imagePath1;
@@ -42,7 +49,16 @@ public class SaveBitMapToDisk {
 
     public void SaveImage(final Bitmap finalBitmap, String folderName) {
 
+        WindowManager wm = (WindowManager) ActivityMain.getAppContext().getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int screenWidth = size.x;
+        int screenHeight = size.y;
+
+        cropped = ScaleCenterCrop.scaleCenterCrop(finalBitmap, screenHeight, screenWidth);
         blurredAndDarkened = darkenBitMap(FastBlur.fastblur(finalBitmap, 1, 5));
+        croppedDark = ScaleCenterCrop.scaleCenterCrop(blurredAndDarkened, screenHeight, screenWidth);
 
         /**
         new Thread() {
@@ -69,35 +85,48 @@ public class SaveBitMapToDisk {
         n = generator.nextInt(n);
 
         //Name files
-        String fileName1 = "Image-" + n + ".jpg";
-        String fileName2 = "Image-" + n + "BlurredDark" + ".jpg";
+        String fileName1 = "Image-" + n + ".jpg";                   //original
+        String fileName2 = "Image-" + n + "Cropped" + ".jpg";       //cropped
+        String fileName3 = "Image-" + n + "BlurredDark" + ".jpg";   //cropped, dark, and blurred
 
         //Set image paths
         imagePath1 = myDir + "/" + fileName1;
         imagePath2 = myDir + "/" + fileName2;
+        imagePath3 = myDir + "/" + fileName3;
 
         //Make files
         File file1 = new File(myDir, fileName1);
         File file2 = new File(myDir, fileName2);
+        File file3 = new File(myDir, fileName3);
 
         //Test existence of files
         if (file1.exists()) file1.delete();
         if (file2.exists()) file2.delete();
+        if (file3.exists()) file3.delete();
 
         //Write images to files
         try {
 
+            /** one **/
             FileOutputStream out1 = new FileOutputStream(file1);
             finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out1); // Converts the bitmap into a JPEG (a compressed variant of the bitmap)
 
             out1.flush(); // flushes anything which is still buffered by the OutputStream. See why JAVA uses a "buffer" for output streams https://docs.oracle.com/javase/tutorial/essential/io/buffers.html
             out1.close();
 
+            /** two **/
             FileOutputStream out2 = new FileOutputStream(file2);
-            blurredAndDarkened.compress(Bitmap.CompressFormat.JPEG, 90, out2); // Converts the bitmap into a JPEG (a compressed variant of the bitmap)
+            cropped.compress(Bitmap.CompressFormat.JPEG, 90, out2); // Converts the bitmap into a JPEG (a compressed variant of the bitmap)
 
             out2.flush(); // flushes anything which is still buffered by the OutputStream. See why JAVA uses a "buffer" for output streams https://docs.oracle.com/javase/tutorial/essential/io/buffers.html
             out2.close();
+
+            /** three **/
+            FileOutputStream out3 = new FileOutputStream(file3);
+            croppedDark.compress(Bitmap.CompressFormat.JPEG, 90, out3); // Converts the bitmap into a JPEG (a compressed variant of the bitmap)
+
+            out3.flush(); // flushes anything which is still buffered by the OutputStream. See why JAVA uses a "buffer" for output streams https://docs.oracle.com/javase/tutorial/essential/io/buffers.html
+            out3.close();
 
         } catch (Exception e) {
             e.printStackTrace();

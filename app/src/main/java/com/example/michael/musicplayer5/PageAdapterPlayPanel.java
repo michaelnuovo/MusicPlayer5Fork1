@@ -11,12 +11,15 @@ import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.view.PagerAdapter;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -96,13 +99,29 @@ public class PageAdapterPlayPanel extends PagerAdapter {
     public void setBackground(View l1,View l2){
 
         if(songObject.albumArtURI != null){
+
+
+            WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int screenWidth = size.x;
+            int screenHeight = size.y;
+
             Bitmap bm = BitmapFactory.decodeFile(songObject.albumArtURI);
-            BitmapDrawable dw = new BitmapDrawable(bm);
+
+            //ResizeBitMap resize = new ResizeBitMap(mContext);
+            //resize.GetDimensions(bm);
+            //Bitmap bmResized = resize.resize(bm);
+
+            BitmapDrawable dw = new BitmapDrawable(ScaleCenterCrop.scaleCenterCrop(bm, screenHeight, screenWidth));
             l1.setBackgroundDrawable(dw);
+
 
             String blurdark = songObject.albumArtURI.replace(".jpg","BlurredDark.jpg"); //all
             Bitmap bm2 = BitmapFactory.decodeFile(blurdark);
             BitmapDrawable dw2 = new BitmapDrawable(bm2);
+
             l2.setBackgroundDrawable(dw2);
         }
     }
@@ -170,16 +189,18 @@ public class PageAdapterPlayPanel extends PagerAdapter {
                             //try {Thread.sleep(100);} catch (InterruptedException e) {e.printStackTrace();}
                             clicked = false;
 
+                            updateOffscreenLayouts(collection, position, true);
+                            StaticMusicPlayer.mediaPlayer.pause();
+                            StaticMusicPlayer.isPaused = true;
+                            ActivityMain.playButton.setChecked(false);
 
-                            View layout = collection.findViewWithTag(position+1);
-                            layout.findViewById(R.id.pager_art_layout).setVisibility(View.GONE);
-                            layout.findViewById(R.id.pager_controls_layout).setVisibility(View.VISIBLE);
                         }
                     });
                     Log.v("TAG", "L1 start animation");
                     l1.startAnimation(fadeOut);
                     l2.setVisibility(View.VISIBLE);
                     //l2.startAnimation(fadeIn);
+
                 }
             }
         });
@@ -217,14 +238,63 @@ public class PageAdapterPlayPanel extends PagerAdapter {
                             clicked = false;
                             //startUpdate(layout);
 
+                            updateOffscreenLayouts(collection, position, false);
+
                         }
                     });
                     l2.startAnimation(fadeOut);
                     l1.setVisibility(View.VISIBLE);
                     //l1.startAnimation(fadeIn);
+                    StaticMusicPlayer.mediaPlayer.start();
+                    StaticMusicPlayer.isPaused = false;
+                    ActivityMain.playButton.setChecked(true);
                 }
             }
         });
+    }
+
+    public void updateOffscreenLayouts(ViewGroup collection, int position, boolean blurState){
+
+        if(blurState == true){
+            if (position > 0 ){ //update left and right layouts
+
+                View layoutR = collection.findViewWithTag(position+1);
+                layoutR.findViewById(R.id.pager_art_layout).setVisibility(View.GONE);
+                layoutR.findViewById(R.id.pager_controls_layout).setVisibility(View.VISIBLE);
+
+                View layoutL = collection.findViewWithTag(position-1);
+                layoutL.findViewById(R.id.pager_art_layout).setVisibility(View.GONE);
+                layoutL.findViewById(R.id.pager_controls_layout).setVisibility(View.VISIBLE);
+            }
+
+            if (position == 0){ //update right layout
+
+                View layoutR = collection.findViewWithTag(position+1);
+                layoutR.findViewById(R.id.pager_art_layout).setVisibility(View.GONE);
+                layoutR.findViewById(R.id.pager_controls_layout).setVisibility(View.VISIBLE);
+            }
+        }
+
+        if(blurState == false){
+            if (position > 0 ){ //update left and right layouts
+
+                View layoutR = collection.findViewWithTag(position+1);
+                layoutR.findViewById(R.id.pager_art_layout).setVisibility(View.VISIBLE);
+                layoutR.findViewById(R.id.pager_controls_layout).setVisibility(View.GONE);
+
+                View layoutL = collection.findViewWithTag(position-1);
+                layoutL.findViewById(R.id.pager_art_layout).setVisibility(View.VISIBLE);
+                layoutL.findViewById(R.id.pager_controls_layout).setVisibility(View.GONE);
+            }
+
+            if (position == 0){ //update right layout
+
+                View layoutR = collection.findViewWithTag(position+1);
+                layoutR.findViewById(R.id.pager_art_layout).setVisibility(View.VISIBLE);
+                layoutR.findViewById(R.id.pager_controls_layout).setVisibility(View.GONE);
+            }
+        }
+
     }
 
     @Override

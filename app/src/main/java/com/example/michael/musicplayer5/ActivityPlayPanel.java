@@ -42,6 +42,7 @@ public class ActivityPlayPanel extends AppCompatActivity {
         playPager.setAdapter(playAdapter); //the adapter designates pager layout, and the which layout view to adapt to
                                                               //so we are sticking the layout into the adapter widget, and adapter a child view in the layout
         playPager.setCurrentItem(StaticMusicPlayer.currentIndex);
+        playPager.setPageTransformer(true, new DepthPageTransformer());
 
 
 

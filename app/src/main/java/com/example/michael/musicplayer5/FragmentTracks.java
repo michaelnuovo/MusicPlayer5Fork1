@@ -175,7 +175,7 @@ public class FragmentTracks extends Fragment implements MyInterface {
                 // Open the play panel activity from this fragment
 
 
-
+                StaticMusicPlayer.setList(songObjectList);
                 StaticMusicPlayer.tryToPlaySong(songObjectList.get(arg2)); // arg2 is a sonObject
 
 

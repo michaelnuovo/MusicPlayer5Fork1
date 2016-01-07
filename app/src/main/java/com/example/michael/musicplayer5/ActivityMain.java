@@ -47,6 +47,7 @@ public class ActivityMain extends AppCompatActivity {
     TextView footer_song_artist;
 
 
+    static public ToggleButton playButton;
 
     final static ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
 
@@ -62,8 +63,11 @@ public class ActivityMain extends AppCompatActivity {
     public void onResume(){
 
         /** Set play button and play button listener **/
-        StaticMusicPlayer.setPlayButton((ToggleButton) findViewById(R.id.main_playButton));
-        StaticMusicPlayer.setPlayButtonListener();
+        //StaticMusicPlayer.setPlayButton((ToggleButton) findViewById(R.id.main_playButton));
+        //StaticMusicPlayer.setPlayButtonListener();
+
+        //StaticMusicPlayer.playButton.setChecked(StaticMusicPlayer.isPaused);
+
         super.onResume();
 
         /** refresh album pager **/
@@ -77,6 +81,8 @@ public class ActivityMain extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        playButton = (ToggleButton) findViewById(R.id.main_playButton);
 
         /**
         String encStr = "not encoded";
@@ -122,7 +128,7 @@ public class ActivityMain extends AppCompatActivity {
         //aa.dumpAlbumColumns();
 
         LastFmAlbumLookup lf = new LastFmAlbumLookup(this,albumObjectList);
-        //lf.makeRequest();
+        lf.makeRequest();
 
         //SpotifySolo spy = new SpotifySolo(this,albumObjectList);
         //spy.makeRequest();
@@ -159,7 +165,7 @@ public class ActivityMain extends AppCompatActivity {
         tab.setupWithViewPager(viewPager);
 
         /** Set play button and play button listener **/
-        StaticMusicPlayer.setPlayButton((ToggleButton) findViewById(R.id.main_playButton));
+        StaticMusicPlayer.setPlayButton(playButton);
         StaticMusicPlayer.setPlayButtonListener();
 
         /** Set shuffle button and shuffle button listener **/
@@ -261,6 +267,7 @@ public class ActivityMain extends AppCompatActivity {
                 Intent intent = new Intent(ActivityMain.this, ActivityPlayPanel.class);
                 //intent.putExtra("songObjectList", songObjectList); //Optional parameters
                 ActivityMain.this.startActivity(intent);
+
                 //overridePendingTransition(R.anim.slide_up, R.anim.dont_move);
 
                 // So here, if a a song is already playing, then we want to open

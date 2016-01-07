@@ -31,6 +31,7 @@ public class ResizeBitMap {
         display.getSize(size);
         screenWidth = size.x;
         screenHeight = size.y;
+
         bitMapWidth = unscaledBitmap.getWidth();
         bitMapHeight = unscaledBitmap.getHeight();
         Log.v("TAG screenWidth: ", String.valueOf(screenWidth));

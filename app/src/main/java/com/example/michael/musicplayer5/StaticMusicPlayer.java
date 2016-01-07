@@ -23,7 +23,7 @@ public final class StaticMusicPlayer {
 
     public static MediaPlayer mediaPlayer = new MediaPlayer();
 
-    private static ToggleButton playButton = null;
+    public static ToggleButton playButton = null;
 
     private static ToggleButton loopButton = null;
     private static Button skipForwardsButton = null;
@@ -48,6 +48,9 @@ public final class StaticMusicPlayer {
     static private boolean musicIsPlaying = false; // Variable sets the play button toggle mode
 
     static public boolean isPaused;
+
+
+
 
     /** Empty Constructor **/
 
@@ -113,6 +116,11 @@ public final class StaticMusicPlayer {
 
                 // if a song finishes we need to set musicIsPlaying to false for the toggle button state
                 musicIsPlaying = false;
+
+                // we also to start playing the next song if there is one
+                if (currentIndex != songObjectList.size() - 1) {
+                    tryToPlaySong(songObjectList.get(currentIndex + 1));
+                }
             }
         });
 
@@ -145,12 +153,12 @@ public final class StaticMusicPlayer {
         currentIndex = songObjectList.indexOf(songObject);
         musicIsPlaying = true;
         isPaused = false;
-        //playButton.setChecked(true)
+        ActivityMain.playButton.setChecked(true);
         //ActivityMain.footerPager.invalidate();
         //ActivityMain.footerPager.setCurrentItem(StaticMusicPlayer.currentIndex); //refresh footer pager in main activity
         ActivityMain.footerPager.setAdapter(new PageAdapterFooter(ActivityMain.getAppContext()));
         ActivityMain.footerPager.setCurrentItem(currentIndex);
-
+        if(ActivityPlayPanel.playPager != null){ActivityPlayPanel.playPager.setCurrentItem(currentIndex);}
 
         //footer_song_info.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).songTitle);
         //footer_song_artist.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).artist);
@@ -180,6 +188,11 @@ public final class StaticMusicPlayer {
         mediaPlayer.setDataSource(songObject.songPath);
         mediaPlayer.prepare();
         mediaPlayer.start();
+
+
+
+
+        setSongCompletionListener();
 
 
     }
@@ -294,12 +307,14 @@ public final class StaticMusicPlayer {
 
                         Log.v("TAG","No longer pause");
                         isPaused = false;
+                        //playButton.setChecked(false);
                         mediaPlayer.start();
                         musicIsPlaying = true;
 
                     }else{                   // pause
                         Log.v("TAG","Paused now");
                         isPaused = true;
+                        //playButton.setChecked(true);
                         mediaPlayer.pause();
                         musicIsPlaying = false;
                     }
@@ -315,7 +330,7 @@ public final class StaticMusicPlayer {
             public void onClick(View v) {
 
                 // Always make sure play button toggle state is set to false
-                playButton.setChecked(true);
+                playButton.setChecked(true); //pause state
                 pressedPlay = false;
 
                 // So here, when the shuffle button is pressed from the main activity,
