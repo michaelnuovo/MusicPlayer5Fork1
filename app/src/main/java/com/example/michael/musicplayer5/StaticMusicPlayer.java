@@ -28,6 +28,7 @@ public final class StaticMusicPlayer {
     private static ToggleButton loopButton = null;
     private static Button skipForwardsButton = null;
     private static Button skipBackwardsButton = null;
+    private static Button normalPlayButton = null;
 
     static ArrayList<SongObject> songObjectList = null;
     public static ArrayList<SongObject> playList = new ArrayList<>();
@@ -45,9 +46,9 @@ public final class StaticMusicPlayer {
 
     private static ViewPager viewPager;
 
-    static private boolean musicIsPlaying = false; // Variable sets the play button toggle mode
+    static public boolean musicIsPlaying = false; // Variable sets the play button toggle mode
 
-    static public boolean isPaused;
+    static public boolean isPaused = false;
 
 
 
@@ -69,7 +70,10 @@ public final class StaticMusicPlayer {
     public static void setPlayButton(ToggleButton btn){
 
         playButton = btn;
-        playButton.setChecked(musicIsPlaying);
+    }
+
+    public static void setNormalPlayButton(Button btn){
+        normalPlayButton = btn;
     }
 
     public static void setShuffleButton(ToggleButton btn){
@@ -106,6 +110,9 @@ public final class StaticMusicPlayer {
 
         viewPager = vp;
     }
+
+
+
 
     public static void setSongCompletionListener(){
 
@@ -146,6 +153,41 @@ public final class StaticMusicPlayer {
 
     }
 
+    static public void togglePlaybutton(){
+
+         ActivityMain.playButton.setChecked(!isPaused); //always want toggle to be opposite of pause state
+         if(ActivityArtist.playButton != null){
+             ActivityArtist.playButton.setChecked(!isPaused);
+             Log.v("TAG", "ActivityArtist.playButton is not null ");}
+        if(ActivityAlbum.playButton != null){
+            ActivityAlbum.playButton.setChecked(!isPaused);
+            Log.v("TAG", "ActivityArtist.playButton is not null ");}
+
+    }
+
+    public static void setNormalPlayButtonListener(){
+        normalPlayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Log.v("TAG", "clicked fb");
+
+
+                if(ActivityPlayPanel.playPager != null) {
+                    tryToPlaySong(songObjectList.get(ActivityPlayPanel.playPager.getCurrentItem()));
+
+                }
+            }
+        });
+    }
+
+    static public void togglePauseState(){
+
+        if(isPaused){mediaPlayer.start();isPaused=false;}
+        else{mediaPlayer.pause();isPaused=true;}
+        togglePlaybutton();
+    }
+
     /** Listeners**/
     public static void tryToPlaySong(final SongObject songObject) {
 
@@ -153,11 +195,19 @@ public final class StaticMusicPlayer {
         currentIndex = songObjectList.indexOf(songObject);
         musicIsPlaying = true;
         isPaused = false;
-        ActivityMain.playButton.setChecked(true);
+
+        togglePlaybutton();
         //ActivityMain.footerPager.invalidate();
         //ActivityMain.footerPager.setCurrentItem(StaticMusicPlayer.currentIndex); //refresh footer pager in main activity
         ActivityMain.footerPager.setAdapter(new PageAdapterFooter(ActivityMain.getAppContext()));
         ActivityMain.footerPager.setCurrentItem(currentIndex);
+
+        if(ActivityArtist.footerPager != null){ActivityArtist.footerPager.setAdapter(new PageAdapterFooter(ActivityMain.getAppContext()));}
+        if(ActivityArtist.footerPager != null){ActivityArtist.footerPager.setCurrentItem(currentIndex);}
+
+        if(ActivityAlbum.footerPager != null){ActivityAlbum.footerPager.setAdapter(new PageAdapterFooter(ActivityMain.getAppContext()));}
+        if(ActivityAlbum.footerPager != null){ActivityAlbum.footerPager.setCurrentItem(currentIndex);}
+
         if(ActivityPlayPanel.playPager != null){ActivityPlayPanel.playPager.setCurrentItem(currentIndex);}
 
         //footer_song_info.setText(StaticMusicPlayer.songObjectList.get(StaticMusicPlayer.currentIndex).songTitle);
@@ -189,9 +239,6 @@ public final class StaticMusicPlayer {
         mediaPlayer.prepare();
         mediaPlayer.start();
 
-
-
-
         setSongCompletionListener();
 
 
@@ -204,24 +251,18 @@ public final class StaticMusicPlayer {
             @Override
             public void onClick(View v) {
 
-                Log.v("TAG: ", "forwards button clicked");
+                Log.v("TAG","clicked fb");
 
-                // Play the next song in the list,
-                // but we need to also make sure there is no out of bounds error.
-                // If the next index would be out of bounds, then start at the first index, index 0,
-                // although the play list will stack on itself and we wont actually need out of bound protection,
-                // but let's include out of bound protection anyways.
-                // We also have to page the pager, though I would like this functionality outside this class,
-                // but apparently I can't have have more than two listeners at once, and I don't have the technical
-                // know how to get around this restriction.
+                if(ActivityPlayPanel.playPager != null){ActivityPlayPanel.playPager.setCurrentItem(ActivityPlayPanel.playPager.getCurrentItem()+1);}
+
+                /**
                 if (currentIndex == songObjectList.size() - 1) {
 
                     tryToPlaySong(songObjectList.get(0)); // play the zero index song
                 } else {
                     tryToPlaySong(songObjectList.get(currentIndex + 1)); // play the next song
-                }
+                }***/
 
-                //PlayPanelActivity.playPager.setCurrentItem(PlayPanelActivity.position + 1, true); // Pager will page on click
             }
         });
     }
@@ -235,25 +276,9 @@ public final class StaticMusicPlayer {
 
                 Log.v("TAG: ", "back button clicked");
 
-                // Play the previous song in the list,
-                // but we need to also make sure there is no out of bounds error.
-                // However, rather than checking if the previous index would be less than zero,
-                // we are just going to take the last song object from the list
-                // and move it to the front, this way the shuffle mechanism
-                // will be easier to program
+                if(ActivityPlayPanel.playPager != null){ActivityPlayPanel.playPager.setCurrentItem(ActivityPlayPanel.playPager.getCurrentItem()-1);}
 
-                // Actually move the last element in the list to the beginning won't work
-                // with the view pager which is only compatible with adding views to the right
-                // so we will actually want to protect the program from an out of bounds error
-                // by playing the last song in the list, and we can even position the pager
-                // at the end of the list with set current item method.
-
-                // I think it will be better to random the index being played rather than physically
-                // and re-positioning the view pager as i don't think the pager likes it when
-                // i rotate the list items around
-
-                //
-
+                /*
                 if (currentIndex == 0) {
 
                     //SongObject so = songObjectList.get(songObjectList.size()-1); // get the last element
@@ -265,11 +290,7 @@ public final class StaticMusicPlayer {
                 } else {
 
                     tryToPlaySong(songObjectList.get(currentIndex - 1)); // play the preceding song
-                }
-
-                //PlayPanelActivity.playPager.setCurrentItem(PlayPanelActivity.position - 1, true); // Pager will page on click
-                //PlayPanelActivity.position -= 1;
-
+                }*/
             }
         });
     }
@@ -307,16 +328,18 @@ public final class StaticMusicPlayer {
 
                         Log.v("TAG","No longer pause");
                         isPaused = false;
-                        //playButton.setChecked(false);
+
                         mediaPlayer.start();
                         musicIsPlaying = true;
+                        StaticMusicPlayer.togglePlaybutton();
 
                     }else{                   // pause
                         Log.v("TAG","Paused now");
                         isPaused = true;
-                        //playButton.setChecked(true);
+
                         mediaPlayer.pause();
                         musicIsPlaying = false;
+                        StaticMusicPlayer.togglePlaybutton();
                     }
                 }
             }
@@ -330,7 +353,7 @@ public final class StaticMusicPlayer {
             public void onClick(View v) {
 
                 // Always make sure play button toggle state is set to false
-                playButton.setChecked(true); //pause state
+
                 pressedPlay = false;
 
                 // So here, when the shuffle button is pressed from the main activity,

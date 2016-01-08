@@ -19,6 +19,7 @@ public class FragmentArtists extends Fragment {
     public static final String EXTRA_MESSAGE = "EXTRA_MESSAGE";
     static ListView listView;
     static ArrayList<ArtistObject> artistObjectList;
+    static public ArtistObject currentArtist;
 
     /** Static Factory Method for Fragment Instantiation **/
     public static final FragmentArtists newInstance(ArrayList<ArtistObject> arrayList)
@@ -58,7 +59,9 @@ public class FragmentArtists extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 
-                Intent intent = new Intent(getActivity(), ActivityPlayPanel.class);
+                currentArtist = artistObjectList.get(arg2);
+                if(ActivityArtist.playButton != null){ActivityArtist.playButton.setChecked(StaticMusicPlayer.isPaused);}
+                Intent intent = new Intent(getActivity(), ActivityArtist.class);
                 startActivity(intent);
             }
         });

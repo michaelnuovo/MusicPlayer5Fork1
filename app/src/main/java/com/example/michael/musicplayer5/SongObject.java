@@ -17,11 +17,26 @@ public class SongObject implements Parcelable{
     public String albumID;
     //public String[] albumID;
 
+    public SongObject copy(SongObject so){
+
+        so.albumArtURI = albumArtURI;
+        so.albumTitle=albumTitle;
+        so.artist=artist;
+        so.songTitle=songTitle;
+        so.songPath=songPath;
+        so.songDuration=songDuration;
+        so.albumURL=albumURL;
+        so.albumID=albumID;
+
+        return so;
+    }
+
     public SongObject(){
         super();
     }
 
     // Parcelable Code
+
 
     public SongObject(Parcel in) {
         super();

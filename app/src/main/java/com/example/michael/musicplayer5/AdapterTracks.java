@@ -67,6 +67,8 @@ public class AdapterTracks extends ArrayAdapter<SongObject>  {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
+
+
         // Get the data item for this position
         SongObject songObject = songObjectList.get(position);
 
@@ -77,10 +79,6 @@ public class AdapterTracks extends ArrayAdapter<SongObject>  {
 
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
-
-
-
-
 
                 convertView = inflater.inflate(R.layout.item_list_view2, parent, false);
 

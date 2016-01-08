@@ -78,14 +78,24 @@ public class FragmentTracks extends Fragment implements MyInterface {
 
         listView = (ListView) rootView.findViewById(R.id.fragmentListView);
 
+
+
         //listView.setFastScrollAlwaysVisible(true);
         //listView.setScrollBarStyle(R.drawable.scroll_style_custom);
 
         //View header = inflater.inflate(R.layout.list_header, container, false);
         //listView.addHeaderView(header);
 
+        View header = getLayoutInflater(savedInstanceState).inflate(R.layout.header, null);
+        //View header = inflater.inflate(R.layout.header,null);
+
+        //listView.addHeaderView(header);
+
         adapter = new AdapterTracks(getActivity(), R.layout.item_list_view2, songObjectList);
         listView.setAdapter(adapter);
+
+
+
 
         UpdateAdapters.getInstance().setAdapterOne(adapter,listView);
 
@@ -189,7 +199,7 @@ public class FragmentTracks extends Fragment implements MyInterface {
 
                 if (StaticMediaPlayer_OLD.playButton.isChecked() == false) { // If set to play
 
-                    StaticMediaPlayer_OLD.playButton.setChecked(true); // set to pause
+
                 }
 
                 SongObject songObject = songList.get(arg2);

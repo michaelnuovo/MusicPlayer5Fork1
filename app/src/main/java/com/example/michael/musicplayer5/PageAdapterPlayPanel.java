@@ -52,6 +52,7 @@ public class PageAdapterPlayPanel extends PagerAdapter {
     }
 
 
+
     @Override
     public Object instantiateItem(ViewGroup collection, int position) {
 
@@ -92,8 +93,8 @@ public class PageAdapterPlayPanel extends PagerAdapter {
         StaticMusicPlayer.setSkipForwardsListener();
         StaticMusicPlayer.skipLeftButton((Button) layout.findViewById(R.id.skipback));
         StaticMusicPlayer.setSkipBackwardsListener();
-        StaticMusicPlayer.setPlayButton((ToggleButton) layout.findViewById(R.id.playbutton));
-        StaticMusicPlayer.setPlayButtonListener();
+        StaticMusicPlayer.setNormalPlayButton((Button) layout.findViewById(R.id.playbutton));
+        StaticMusicPlayer.setNormalPlayButtonListener();
     }
 
     public void setBackground(View l1,View l2){
@@ -188,11 +189,11 @@ public class PageAdapterPlayPanel extends PagerAdapter {
                             Log.v("TAG", "L1 visibility set to gone");
                             //try {Thread.sleep(100);} catch (InterruptedException e) {e.printStackTrace();}
                             clicked = false;
-
+                            StaticMusicPlayer.togglePauseState();
                             updateOffscreenLayouts(collection, position, true);
                             StaticMusicPlayer.mediaPlayer.pause();
                             StaticMusicPlayer.isPaused = true;
-                            ActivityMain.playButton.setChecked(false);
+
 
                         }
                     });
@@ -247,7 +248,7 @@ public class PageAdapterPlayPanel extends PagerAdapter {
                     //l1.startAnimation(fadeIn);
                     StaticMusicPlayer.mediaPlayer.start();
                     StaticMusicPlayer.isPaused = false;
-                    ActivityMain.playButton.setChecked(true);
+                    StaticMusicPlayer.togglePlaybutton();
                 }
             }
         });
@@ -256,7 +257,7 @@ public class PageAdapterPlayPanel extends PagerAdapter {
     public void updateOffscreenLayouts(ViewGroup collection, int position, boolean blurState){
 
         if(blurState == true){
-            if (position > 0 ){ //update left and right layouts
+            if (position > 0 && position < songObjectsList.size()-1){ //update left and right layouts
 
                 View layoutR = collection.findViewWithTag(position+1);
                 layoutR.findViewById(R.id.pager_art_layout).setVisibility(View.GONE);
@@ -270,6 +271,14 @@ public class PageAdapterPlayPanel extends PagerAdapter {
             if (position == 0){ //update right layout
 
                 View layoutR = collection.findViewWithTag(position+1);
+                layoutR.findViewById(R.id.pager_art_layout).setVisibility(View.GONE);
+                layoutR.findViewById(R.id.pager_controls_layout).setVisibility(View.VISIBLE);
+            }
+
+
+            if (position == songObjectsList.size()-1){ //update left layout
+
+                View layoutR = collection.findViewWithTag(position-1);
                 layoutR.findViewById(R.id.pager_art_layout).setVisibility(View.GONE);
                 layoutR.findViewById(R.id.pager_controls_layout).setVisibility(View.VISIBLE);
             }

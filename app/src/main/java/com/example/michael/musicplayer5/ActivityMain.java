@@ -51,6 +51,8 @@ public class ActivityMain extends AppCompatActivity {
 
     final static ArrayList<AlbumObject> albumObjectList = new ArrayList<>();
 
+    public Context returnContext(){return this;}
+
     /** Print albums in albums list**/
     public void printAlbums(){
         for(int i=0;i<albumObjectList.size();i++){
@@ -66,7 +68,7 @@ public class ActivityMain extends AppCompatActivity {
         //StaticMusicPlayer.setPlayButton((ToggleButton) findViewById(R.id.main_playButton));
         //StaticMusicPlayer.setPlayButtonListener();
 
-        //StaticMusicPlayer.playButton.setChecked(StaticMusicPlayer.isPaused);
+
 
         super.onResume();
 
@@ -173,20 +175,29 @@ public class ActivityMain extends AppCompatActivity {
         StaticMusicPlayer.setShuffleButton((Button) findViewById(R.id.shuffleButton));
         StaticMusicPlayer.setShuffleButtonListener();
 
-        mainFooterListener(songObjectList);
+        //mainFooterListener(songObjectList);
 
         /** pager for albums **/
         footerPager = (ViewPager) findViewById(R.id.footerPager);
+        final PageAdapterFooter pageAdapterFooter = new PageAdapterFooter(this);
         footerPager.setAdapter(new PageAdapterFooter(this));
         footerPager.setCurrentItem(StaticMusicPlayer.currentIndex);
-
-        footerPager.setOnClickListener(new View.OnClickListener() {
+        footerPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
-            public void onClick(View v) {
-                // never called
-                Log.v("TAG","pager footer clicked");
+            public void onPageScrolled(int i, float v, int i2) {
+            }
+            @Override
+            public void onPageSelected(int i) {
+                pageAdapterFooter.setCurrentItem(footerPager.getCurrentItem());
+            }
+            @Override
+            public void onPageScrollStateChanged(int i) {
             }
         });
+
+
+
+
 
 
         /** set footer song info **/
@@ -402,36 +413,7 @@ public class ActivityMain extends AppCompatActivity {
                         albumObjectList.add(new AlbumObject(songObject));
                     }
 
-                    /**
-                    if(albumObjectList.isEmpty()){
-                        albumObjectList.add(new AlbumObject(albumTitle,albumArtist,songObject.albumArtURI,songObject));
-                    } else {
-
-                        boolean bool = false;
-                        for(int i = 0; i < albumObjectList.size(); i++) { // of the song is already added, don't add it again
-
-                            if(albumObjectList.get(i).albumTitle.equals(albumTitle)) {
-                                albumObjectList.get(i).songObjectList.add(songObject);
-                                albumObjectList.get(i).albumArtURI = songObject.albumArtURI;
-                                albumObjectList.get(i).albumId = Integer.parseInt(songObject.albumID);
-                                Log.v("TAG","album id is here : "+songObject.albumID);
-                                albumObjectList.get(i).albumTitle = songObject.albumTitle;
-                                albumObjectList.get(i).albumArtist = songObject.artist;
-                                albumObjectList.get(i).albumTrackCount += 1;
-
-                                bool = true;
-                            }
-                        }
-
-                        if(bool == false){ // if the song is not added, add it
-                            AlbumObject newAlbumObject = new AlbumObject(albumTitle,albumArtist,albumArtURI,songObject);
-                            newAlbumObject.albumTrackCount +=1;
-                            albumObjectList.add(newAlbumObject);
-                        }
-                    }**/
-
                     /** Making the artist object and adding it to the list **/
-
                     if(artistObjectList.isEmpty()){
                         artistObjectList.add(new ArtistObject(songObject));
                     } else {

@@ -23,7 +23,7 @@
             android:id="@+id/skipback"
             android:background="@drawable/skipback"
             android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_height="25dp"
             android:layout_margin="10dp"/>
 
         <View
@@ -32,11 +32,11 @@
             android:layout_weight="1" >
         </View>
 
-        <ToggleButton
+        <Button
             android:id="@+id/playbutton"
-            android:background="@drawable/selector_button_play"
+            android:background="@drawable/button_play"
             android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_height="65dp"
             android:layout_margin="10dp"
             />
 
@@ -50,7 +50,7 @@
             android:id="@+id/skipforwards"
             android:background="@drawable/skipforwards"
             android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_height="25dp"
             android:layout_margin="10dp" />
 
         <View

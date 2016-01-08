@@ -15,5 +15,8 @@
         How to import Android Library Projects, Progress Bar, Animation, Android Tools and many more.</string>
     <string name="title_activity_artists">ArtistsActivity</string>
     <string name="title_activity_activity_albums">ActivityAlbums</string>
+    <string name="title_activity_activity_artist">ActivityArtist</string>
+    <string name="title_activity_activity_album">ActivityAlbum</string>
+    <string name="title_activity_activity_test">ActivityTest</string>
 
 </resources>

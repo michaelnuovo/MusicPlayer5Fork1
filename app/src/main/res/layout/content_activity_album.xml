@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#191919">
+
+    <ListView
+        android:id="@+id/artistAlbumList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@null"
+        android:scrollbarThumbVertical="@drawable/scroll_style_custom"
+        android:layout_above="@id/activity_main_footer">
+    </ListView>
+
+    <include layout="@layout/activity_main_footer"
+        android:id="@id/activity_main_footer"
+        android:layout_height="100dp"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"/>
+
+</RelativeLayout>

@@ -200,7 +200,7 @@ public final class StaticMediaPlayer_OLD {
                 Log.v("TAG: ","forwards button clicked");
 
                 if(playButton.isChecked() == false){
-                    playButton.setChecked(true);
+                    //playButton.setChecked(true);
                 }
 
                 if(noSongHasBeenPlayedYet == true){

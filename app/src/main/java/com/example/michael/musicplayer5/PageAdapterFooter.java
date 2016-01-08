@@ -20,11 +20,16 @@ import java.util.ArrayList;
 
 public class PageAdapterFooter extends PagerAdapter {
 
-
     private Context mContext;
     private ArrayList<SongObject> songObjectsList = StaticMusicPlayer.songObjectList;
     private SongObject songObject;
-    private int currentIndex;
+
+    static private int currentItem;
+
+    public void setCurrentItem(int ci){
+        currentItem = ci;
+    }
+
 
     public PageAdapterFooter(Context context) {
 
@@ -32,7 +37,7 @@ public class PageAdapterFooter extends PagerAdapter {
         //super(fm);
         this.mContext = context;
         //this.songObjectsList = songObjectsList;
-        this.currentIndex = currentIndex;
+
 
     }
 
@@ -40,8 +45,9 @@ public class PageAdapterFooter extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup collection, final int position) {
 
+        songObject = songObjectsList.get(currentItem);
+        //songObject = songObjectsList.get(ActivityMain.footerPager.getCurrentItem());
 
-        songObject = songObjectsList.get(position);
 
         LayoutInflater inflater = LayoutInflater.from(mContext);
         ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.page_adapter_footer, collection, false); //a view group is a layout, a view is a child of a view group
@@ -51,7 +57,7 @@ public class PageAdapterFooter extends PagerAdapter {
         layout.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
                 //this will log the page number that was click
-                Log.v("TAG", "This page was clicked: ");
+                Log.v("TAG", "getCurrentItem is: "+ String.valueOf(ActivityMain.footerPager.getCurrentItem()));
 
                 Intent intent = new Intent(mContext, ActivityPlayPanel.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
